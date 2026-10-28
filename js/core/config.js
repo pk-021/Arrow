@@ -8,8 +8,8 @@ globalThis.ArrowConfig = (() => {
     'redirect_home',
     'hide_shorts',
     'minimal_homepage',
-    'enable_website_blocking',
-    'hide_sidebar_recommendations'
+    'hide_sidebar_recommendations',
+    'hide_comments'
   ]);
 
   const MODE_KEYS = Object.freeze({
@@ -24,18 +24,18 @@ globalThis.ArrowConfig = (() => {
   const MODE_PRESETS = Object.freeze({
     off: Object.freeze({
       ArrowOn: false, redirect_home: false, hide_shorts: false,
-      minimal_homepage: false, enable_website_blocking: false,
-      hide_sidebar_recommendations: false
+      minimal_homepage: false, hide_sidebar_recommendations: false,
+      hide_comments: false
     }),
     minimal: Object.freeze({
       ArrowOn: true, redirect_home: false, hide_shorts: true,
-      minimal_homepage: true, enable_website_blocking: true,
-      hide_sidebar_recommendations: true
+      minimal_homepage: true, hide_sidebar_recommendations: true,
+      hide_comments: false
     }),
     'high-focus': Object.freeze({
       ArrowOn: true, redirect_home: false, hide_shorts: true,
-      minimal_homepage: true, enable_website_blocking: true,
-      hide_sidebar_recommendations: true
+      minimal_homepage: true, hide_sidebar_recommendations: true,
+      hide_comments: true
     })
   });
 
@@ -55,6 +55,21 @@ globalThis.ArrowConfig = (() => {
     return 'custom';
   }
 
+  function readMode(settings) {
+    const persisted = settings?.[MODE_KEYS.mode];
+    return VALID_MODES.has(persisted) ? persisted : detectMode(settings || {});
+  }
+
+  function resolveMode(currentSettings, nextSettings, requestedMode) {
+    if (VALID_MODES.has(requestedMode)) return requestedMode;
+    const persisted = readMode(currentSettings);
+    const persistedPreset = MODE_PRESETS[persisted];
+    if (persistedPreset && Object.entries(persistedPreset).every(([key, value]) => nextSettings[key] === value)) {
+      return persisted;
+    }
+    return detectMode(nextSettings);
+  }
+
   function normalizeMode(mode, fallback = 'minimal') {
     return VALID_MODES.has(mode) ? mode : fallback;
   }
@@ -67,19 +82,8 @@ globalThis.ArrowConfig = (() => {
     };
   }
 
-  function normalizeBlockTarget(value) {
-    const input = String(value || '').trim();
-    if (!input) return '';
-    try {
-      const url = new URL(/^https?:\/\//i.test(input) ? input : `https://${input}`);
-      return `${url.hostname.replace(/^www\./i, '').toLowerCase()}${url.pathname.replace(/\/$/, '')}${url.search}${url.hash}`;
-    } catch {
-      return '';
-    }
-  }
-
   return Object.freeze({
     SETTINGS_KEYS, MODE_KEYS, MODE_PRESETS, VALID_MODES,
-    snapshot, detectMode, normalizeMode, createModeMetadata, normalizeBlockTarget
+    snapshot, detectMode, readMode, resolveMode, normalizeMode, createModeMetadata
   });
 })();

@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="css/login-overlay.css" />
   
   <!-- Scripts (non-module scripts can go here) -->
-  <script src="js/popup.js" defer></script>
   <script src="js/login.js" defer></script>
 </head>
 <body>
@@ -52,18 +51,6 @@
             </div>
           </button>
 
-          <button type="button" id="home-blocked-row" class="home-row home-row-button">
-            <div class="home-copy">
-              <div class="home-title">Blocked Websites</div>
-              <div class="home-subtitle">Manage blocked items</div>
-            </div>
-            <div class="home-row-right">
-              <span id="home-blocked-count" class="home-value">0</span>
-              <svg class="home-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </button>
         </div>
       </section>
 
@@ -88,7 +75,7 @@
               <label class="mode-option">
                 <input type="radio" name="settings-mode" value="off" />
                 <div class="mode-card">
-                  <div class="mode-title">OFF</div>
+                  <div class="mode-title">Off</div>
                   <div class="mode-desc">Extension disabled</div>
                 </div>
               </label>
@@ -165,56 +152,25 @@
               </div>
 
               <div class="setting-item">
-                <label for="enable-website-blocking">Enable Website Blocking</label>
-                <label class="switch">
-                  <input type="checkbox" id="enable-website-blocking" />
-                  <span class="slider"></span>
-                </label>
-              </div>
-
-              <div class="setting-item">
                 <label for="hide-sidebar-recommendations">Hide Sidebar Recommendations</label>
                 <label class="switch">
                   <input type="checkbox" id="hide-sidebar-recommendations" />
                   <span class="slider"></span>
                 </label>
               </div>
+
+              <div class="setting-item">
+                <label for="hide-comments">Hide comments</label>
+                <label class="switch">
+                  <input type="checkbox" id="hide-comments" />
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Blocking tab view -->
-      <section id="tab-blocking" class="tab-view" aria-label="Blocked Websites" role="region" hidden>
-        <div class="tab-page-header">
-          <div class="tab-page-header-left">
-            <button type="button" id="back-from-blocking-btn" class="back-btn" aria-label="Back to Home">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <h2 id="blocking-view-title">Blocked Websites</h2>
-          </div>
-          <div class="controls">
-            <button type="button" id="add-block-btn" class="add-block-btn toolbar-btn is-hidden" title="Add blocked website or channel">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="blocking-container">
-          <!-- Blocked Websites Section -->
-          <div class="blocked-section">
-            <div id="blocked-websites-list" class="blocked-list">
-              <!-- Blocked websites will be dynamically inserted here -->
-            </div>
-            <p class="empty-message" id="empty-websites" hidden>No blocked websites yet</p>
-          </div>
-
-        </div>
-      </section>
     </main>
 
     <footer class="popup-footer" aria-label="Pending changes actions">
@@ -230,40 +186,6 @@
 
     <!-- Test notification button (hidden by default, uncomment for testing) -->
     <!-- <button id="test-notification" style="margin: 10px; padding: 8px 16px; background: #ff0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Test Notification</button> -->
-  </div>
-
-  <!-- Add Block Overlay -->
-  <div id="add-block-overlay" class="overlay" hidden>
-    <div class="overlay-content">
-      <div class="overlay-header">
-        <h2>Add Blocked Content</h2>
-        <button id="close-overlay-btn" class="close-btn" title="Close">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="overlay-body">
-        <div class="input-section">
-          <div id="website-input" class="input-group">
-            <label for="website-url">Website URL</label>
-            <input 
-              type="text" 
-              id="website-url" 
-              placeholder="e.g., youtube.com/watch?v=..." 
-              autocomplete="off"
-            />
-            <small>Enter the full URL or domain you want to block</small>
-          </div>
-        </div>
-
-        <div class="overlay-actions">
-          <button id="cancel-overlay-btn" class="btn-secondary">Cancel</button>
-          <button id="save-overlay-btn" class="btn-primary">Add Block</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Login Overlay -->
@@ -297,7 +219,7 @@
 
         <div id="login-container" class="hidden">
           <div class="screen-header">
-            <h3>Vefrification</h3>
+            <h3>Verification</h3>
           </div>
           <input type="password" id="password-input" placeholder="Password" />
           <div class="login-actions">
@@ -326,6 +248,7 @@
     </div>
   </div>
   <script src="js/core/config.js"></script>
+  <script src="js/core/state.js"></script>
   <script src="js/popup.js"></script>
 </body>
 </html>

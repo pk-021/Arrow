@@ -264,10 +264,9 @@ async function checkPassword() {
   const password = await getPassword();
 
   if (enteredPass === password) {
-    // Apply any pending settings or block updates after successful login
-    chrome.storage.local.get(['arrow_pending_settings', 'arrow_pending_block_updates', 'arrow_has_pending_block_deletions', 'arrow_pending_mode'], (data) => {
+    // Apply pending settings after successful login.
+    chrome.storage.local.get(['arrow_pending_settings', 'arrow_pending_mode'], (data) => {
       const pendingSettings = data.arrow_pending_settings || null;
-      const pendingBlocks = data.arrow_pending_block_updates || null;
       const pendingMode = data.arrow_pending_mode || null;
 
       // Build a single payload to set in one operation
@@ -290,17 +289,9 @@ async function checkPassword() {
         }
       }
 
-      if (pendingBlocks && typeof pendingBlocks === 'object') {
-        if (Array.isArray(pendingBlocks.blockedWebsites)) {
-          toSet.blockedWebsites = pendingBlocks.blockedWebsites;
-          hadChanges = true;
-        }
-      }
-
       if (hadChanges) {
-              chrome.storage.local.set(toSet, () => {
-          // Clean up pending keys/flags
-          const keysToRemove = ['arrow_pending_settings', 'arrow_pending_block_updates', 'arrow_has_pending_block_deletions', 'arrow_original_block_lists', 'arrow_pending_mode'];
+              ArrowState.commit(toSet).then(() => {
+          const keysToRemove = ['arrow_pending_settings', 'arrow_pending_mode'];
                 chrome.storage.local.remove(keysToRemove, () => {
                   // Notify success (safe)
                   safeRuntimeSendMessage({
@@ -315,6 +306,9 @@ async function checkPassword() {
                           goBackToPreviousPage();
                         }
                       }, 500);
+          }).catch((commitError) => {
+            console.error('Failed to apply protected changes:', commitError);
+            showInlineError(error, 'Unable to save changes. Please try again.');
           });
         });
       } else {

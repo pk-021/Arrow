@@ -1,5 +1,17 @@
 # Arrow Testing Checklist
 
+## Focused checks during development
+
+Arrow is a browser extension with no build step. Run the smallest check for the
+surface being changed instead of the whole manual checklist on every edit:
+
+- Popup HTML, CSS, or startup-script changes: `node --test tests/popup-shell.test.js`
+- Popup JavaScript or shared popup dependency changes: `npm run check:popup`
+
+Run the relevant manual checklist and the full lifecycle checks in
+`docs/specs/verification.md` before release. Add a focused test beside the
+affected surface whenever a regression is fixed.
+
 Use this checklist to verify the extension after changes and before releasing a build. The goal is to catch UI regressions, broken flows, storage issues, and runtime console errors.
 
 ## 1. Pre-flight Checks

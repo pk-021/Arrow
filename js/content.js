@@ -9,7 +9,8 @@ const offSettings = {
     redirect_home: false,
     hide_shorts: false,
     ArrowOn: false,
-    hide_sidebar_recommendations: false
+    hide_sidebar_recommendations: false,
+    hide_comments: false
 }
 
 let settingCache = {};
@@ -52,7 +53,11 @@ function updateCurrentSettings() {
         applyAttributes(settingCache);
 
         safeRuntimeSendMessage({ type: "toggleRedirects", enabled: settings.redirect_home });
-        safeRuntimeSendMessage({ type: "toggleShorts", enabled: settings.hide_shorts });
+        safeRuntimeSendMessage({
+            type: "toggleShorts",
+            enabled: settings.hide_shorts,
+            redirectToSubscriptions: settings.redirect_home
+        });
 
         //when redirect is turned on at homepage
         if (settingCache.redirect_home) {
@@ -67,9 +72,16 @@ function updateCurrentSettings() {
 // Load settings on script start
 updateCurrentSettings();
 //monitor changes to settings in local storage
-chrome.storage.onChanged.addListener(changes => {
-    updateCurrentSettings();
-})
+chrome.storage.onChanged.addListener((_changes, area) => {
+    if (area === 'local') updateCurrentSettings();
+});
+
+// A discarded/backgrounded YouTube tab may not process every storage event.
+// Re-read the durable source of truth when the document becomes active again.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') updateCurrentSettings();
+});
+window.addEventListener('pageshow', () => updateCurrentSettings());
 
 
 //minimalist homepage

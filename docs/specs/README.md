@@ -8,3 +8,4 @@ message names are contractual, while internal functions are not.
 - [Extension surfaces](surfaces.md)
 - [Background and content behavior](runtime.md)
 - [Verification checklist](verification.md)
+- [Persistence and lifecycle contract](persistence.md)

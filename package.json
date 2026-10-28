@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "test:popup": "node --test tests/popup-shell.test.js",
+    "check:popup": "node --check js/core/config.js && node --check js/core/state.js && node --check js/popup.js && node --test tests/popup-shell.test.js"
+  }
+}

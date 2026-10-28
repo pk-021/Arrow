@@ -2,22 +2,21 @@
 
 ## Popup
 
-Provides Home, Mode/Custom settings, and Blocked Websites tabs. Changes are
-tracked until Save or Cancel. Less restrictive mode changes, custom-mode
-changes, and block deletions are staged for password verification; other
-changes write directly. The popup owns inline block creation and deletion.
+Provides Home and Mode/Custom settings. Changes are tracked until Save or
+Cancel. Less restrictive mode changes and custom-mode changes are staged for
+password verification; other changes write directly. Website blocking and its
+block-list management are not exposed in the popup. Its shell adapts to the
+available viewport and keeps overflowing content scrollable rather than
+clipping controls at high display scale or on a narrow system window.
+
+Custom settings include Hide comments. Minimal leaves comments visible, while
+High Focus enables Hide comments by default.
 
 ## Settings page
 
 Provides legacy direct toggles for extension enabled, subscription redirect,
 and Shorts visibility. Every change updates mode metadata and sends a browser
-notification. Its blocking button opens the popup on the Blocking tab.
-
-## Add-block page
-
-Adds one valid URL to `blockedWebsites`, normalizing its host (including removal
-of protocol and `www`), rejects empty and duplicate entries, and closes after a
-successful save. Enter submits the form; close and Cancel close without changes.
+notification. It does not expose website blocking.
 
 ## Login page/overlay
 
@@ -38,3 +37,28 @@ and auto-dismisses after five seconds.
 Extension pages use `themeSetting` (`light`, `dark`, or `system`). A small
 local cache prevents a flash while storage loads. Dark mode is represented by
 `dark_mode="true"` on the document root.
+
+## Shared visual system and responsive behavior
+
+All extension-owned pages use the Arrow control-panel visual language: a
+neutral canvas, elevated white or dark surfaces, one blue action color, a
+consistent system sans-serif type scale, 8px spacing rhythm, and shared focus,
+input, toggle, and button treatments. Labels use sentence case and controls
+have visible keyboard focus. Light and dark themes preserve equivalent
+contrast, hierarchy, and interaction states.
+
+The popup remains a compact, scrollable control panel: headers orient the
+current view, setting rows and modes use a common surface and border treatment,
+and pending actions remain reachable at the bottom. Standalone settings and
+password surfaces use the same tokens and action hierarchy. At narrow viewport
+widths, page padding and multi-action rows reduce gracefully;
+controls retain a 40px minimum target and never overflow or become clipped.
+
+## Viewport support
+
+Extension pages use a preferred desktop popup size but must not require it.
+The action popup declares an intrinsic 380 by 560 CSS-pixel preferred size;
+that size must not be computed from `vw` or `vh`, because the browser derives
+an action popup's initial viewport from its document's intrinsic dimensions.
+When the browser constrains that preferred size, controls have usable intrinsic
+widths and content remains reachable through scrolling.

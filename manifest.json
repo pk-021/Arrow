@@ -53,6 +53,7 @@
       ],
       "js": [
         "js/core/config.js",
+        "js/core/state.js",
         "js/content.js"
       ],
       "css": [

@@ -45,3 +45,7 @@ jspm_packages/
 .idea/
 *.bak
 *.tmp
+
+# Local agent configuration and installed skills
+.agents/
+skills-lock.json

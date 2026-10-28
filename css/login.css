@@ -1,6 +1,6 @@
 html {
-  width: 380px;
-  height: 560px;
+  width: min(380px, 100vw);
+  height: min(560px, 100vh);
   overflow: hidden;
 }
 
@@ -10,8 +10,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 560px;
-  width: 380px;
+  height: min(560px, 100vh);
+  width: min(380px, 100vw);
+  max-width: 100%;
+  max-height: 100%;
   margin: 0px;
   font-family: "Roboto", Arial, sans-serif;
   background-color: #f9f9f9;
@@ -414,3 +416,31 @@ body:not([data-loaded]) *,
 body:not([data-loaded]) {
   transition: none !important;
 }
+
+/* Password flows share the same form hierarchy as the primary controls. */
+:root { --arrow-canvas:#f5f7fb; --arrow-surface:#fff; --arrow-field:#f8fafc; --arrow-text:#172033; --arrow-muted:#667085; --arrow-line:#dfe5ef; --arrow-hover:#edf3ff; --arrow-blue:#2563eb; --arrow-focus:0 0 0 3px rgba(37,99,235,.24); }
+html[dark_mode="true"] { --arrow-canvas:#111827; --arrow-surface:#182235; --arrow-field:#202c41; --arrow-text:#f3f6fc; --arrow-muted:#aab7ca; --arrow-line:#2c3950; --arrow-hover:#23365a; --arrow-blue:#76a7ff; }
+html, body { width:min(380px,100vw); height:min(560px,100vh); }
+body { background:var(--arrow-canvas); color:var(--arrow-text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; padding:16px; }
+.card-container { width:min(100%,340px); margin:0; padding:24px; border:1px solid var(--arrow-line); border-radius:16px; background:var(--arrow-surface); box-shadow:0 14px 36px rgba(23,32,51,.10); }
+h3 { color:var(--arrow-text); font-size:1.0625rem; font-weight:750; letter-spacing:-.02em; }
+input[type="password"], input[type="text"] { min-height:42px; padding:10px 12px; border-color:var(--arrow-line); border-radius:8px; background:var(--arrow-field); color:var(--arrow-text); }
+input[type="password"]:focus, input[type="text"]:focus { border-color:var(--arrow-blue); box-shadow:var(--arrow-focus); }
+button { min-height:42px; padding:0 16px; border-radius:8px; font-weight:700; letter-spacing:0; }
+.btn-primary, .btn-success, .btn-warning, #login-container .btn-primary { border-color:var(--arrow-blue); background:var(--arrow-blue); color:#fff; }
+.btn-primary:hover, .btn-success:hover, .btn-warning:hover, #login-container .btn-primary:hover { border-color:var(--arrow-blue); background:var(--arrow-blue); filter:brightness(.92); color:#fff; }
+.btn-secondary, #login-container .btn-secondary { border:1px solid var(--arrow-line); border-radius:8px; background:var(--arrow-surface); color:var(--arrow-text); }
+.btn-secondary:hover, #login-container .btn-secondary:hover { background:var(--arrow-hover); border-color:var(--arrow-line); color:var(--arrow-text); }
+.forgot-btn { min-height:40px; color:var(--arrow-blue); font-weight:650; }
+.back-btn { width:40px; height:40px; padding:0; border:1px solid transparent; border-radius:10px; }
+.back-btn:hover { background:var(--arrow-hover); border-color:var(--arrow-line); }
+.back-btn:focus-visible, button:focus-visible { outline:none; box-shadow:var(--arrow-focus); }
+.current-word { padding:10px 12px; border:1px solid var(--arrow-line); border-radius:8px; background:var(--arrow-field); color:var(--arrow-text); }
+.notification-content { border:1px solid var(--arrow-line); border-radius:16px; background:var(--arrow-surface); color:var(--arrow-text); box-shadow:0 18px 48px rgba(15,23,42,.28); }
+html[dark_mode="true"] body { background:var(--arrow-canvas); color:var(--arrow-text); }
+html[dark_mode="true"] .card-container, html[dark_mode="true"] .notification-content { background:var(--arrow-surface); border-color:var(--arrow-line); }
+html[dark_mode="true"] h3, html[dark_mode="true"] .current-word { color:var(--arrow-text); }
+html[dark_mode="true"] input[type="password"], html[dark_mode="true"] input[type="text"] { background:var(--arrow-field); color:var(--arrow-text); border-color:var(--arrow-line); }
+html[dark_mode="true"] .btn-secondary, html[dark_mode="true"] #login-container .btn-secondary { background:var(--arrow-surface); border-color:var(--arrow-line); color:var(--arrow-text); }
+@media (max-width:320px) { body { padding:12px; } .card-container { padding:20px; } #login-container .login-actions, #reset-container .reset-actions { grid-template-columns:1fr; flex-direction:column-reverse; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }

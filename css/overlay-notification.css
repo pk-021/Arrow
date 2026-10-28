@@ -172,3 +172,20 @@
   width: 0% !important;
   transition: width 5s linear !important;
 }
+
+/* Keep injected notifications visually aligned without leaking page styles. */
+.arrow-notification-overlay { width:min(340px,calc(100vw - 32px)) !important; right:16px !important; bottom:16px !important; gap:8px !important; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif !important; }
+.arrow-notification { max-width:100% !important; border-color:#dfe5ef !important; border-radius:14px !important; box-shadow:0 14px 36px rgba(23,32,51,.18) !important; }
+.arrow-notification-header { min-height:56px !important; padding:10px 14px !important; background:#f8fafc !important; border-color:#dfe5ef !important; }
+.arrow-notification-title { color:#172033 !important; font-size:.9375rem !important; font-weight:750 !important; }
+.arrow-notification-close { width:36px !important; height:36px !important; color:#172033 !important; border:1px solid transparent !important; border-radius:9px !important; }
+.arrow-notification-close:hover { background:rgba(37,99,235,.10) !important; border-color:#dfe5ef !important; }
+.arrow-notification-close:focus-visible,.arrow-notification-btn:focus-visible { outline:none !important; box-shadow:0 0 0 3px rgba(37,99,235,.24) !important; }
+.arrow-notification-body { padding:16px !important; }
+.arrow-notification-message { color:#172033 !important; font-size:.875rem !important; line-height:1.5 !important; }
+.arrow-notification-actions { padding:0 16px 16px !important; }
+.arrow-notification-btn { min-height:40px !important; padding:0 16px !important; border-radius:8px !important; background:#2563eb !important; font-weight:700 !important; }
+.arrow-notification-btn:hover { background:#1d4ed8 !important; }
+.arrow-notification-progress { background:#2563eb !important; }
+@media (prefers-color-scheme:dark) { .arrow-notification { background:#182235 !important; border-color:#2c3950 !important; } .arrow-notification-header { background:#202c41 !important; border-color:#2c3950 !important; } .arrow-notification-title,.arrow-notification-message { color:#f3f6fc !important; } .arrow-notification-close { color:#f3f6fc !important; } .arrow-notification-close:hover { background:#23365a !important; border-color:#2c3950 !important; } .arrow-notification-btn,.arrow-notification-progress { background:#76a7ff !important; } }
+@media (prefers-reduced-motion:reduce) { .arrow-notification,.arrow-notification-progress { transition-duration:.01ms !important; } }
