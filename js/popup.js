@@ -4,7 +4,7 @@ function showNotification(message, type = 'info') {
         chrome.notifications.create({
             type: 'basic',
             iconUrl: 'assets/logo_v2.png',
-            title: 'BTube',
+            title: 'Arrow',
             message: message
         });
     }
@@ -12,7 +12,7 @@ function showNotification(message, type = 'info') {
 
 // --- Theme Selector ---
 const themeSelector = document.getElementById("themeSelector");
-const THEME_CACHE_KEY = 'btube_theme_cache';
+const THEME_CACHE_KEY = 'arrow_theme_cache';
 
 function applyTheme(theme) {
     if (theme === 'system') {
@@ -199,7 +199,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const testBtn = document.getElementById("test-notification");
     if (testBtn) {
         testBtn.addEventListener("click", () => {
-            showNotification("This is a test notification from BTube!", "info");
+            showNotification("This is a test notification from Arrow!", "info");
         });
     }
     
@@ -227,7 +227,7 @@ window.addEventListener("DOMContentLoaded", () => {
         blocking: document.getElementById('tab-blocking')
     };
     loginOverlay = createLoginOverlayController();
-    window.BTubeLoginHost = {
+    window.ArrowLoginHost = {
         close: () => {
             loginOverlay.hide();
         },
@@ -353,7 +353,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (backFromSettingsBtn) {
         backFromSettingsBtn.addEventListener('click', () => {
-            const saved = sessionStorage.getItem('btube_prev_page');
+            const saved = sessionStorage.getItem('arrow_prev_page');
             if (saved) {
                 try {
                     const target = new URL(saved, window.location.href).href;
@@ -371,7 +371,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (backFromBlockingBtn) {
         backFromBlockingBtn.addEventListener('click', () => {
-            const saved = sessionStorage.getItem('btube_prev_page');
+            const saved = sessionStorage.getItem('arrow_prev_page');
             if (saved) {
                 try {
                     const target = new URL(saved, window.location.href).href;
@@ -418,7 +418,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // --- Settings toggles support (embedded settings view) ---
 const settingsMap = {
-    "extension-online": "BTubeOn",
+    "extension-online": "ArrowOn",
     "redirect-subscriptions": "redirect_home",
     "disable-shorts": "hide_shorts",
     "minimal-homepage": "minimal_homepage",
@@ -426,50 +426,12 @@ const settingsMap = {
     "hide-sidebar-recommendations": "hide_sidebar_recommendations"
 };
 
-const MODE_STORAGE_KEY = 'btube_mode';
-const MODE_SETTINGS_SNAPSHOT_KEY = 'btube_mode_settings_snapshot';
-const MODE_UPDATED_AT_KEY = 'btube_mode_updated_at';
-const VALID_MODES = new Set(['off', 'minimal', 'high-focus', 'custom']);
-
-// Mode presets
-const modePresets = {
-    "off": {
-        BTubeOn: false,
-        redirect_home: false,
-        hide_shorts: false,
-        minimal_homepage: false,
-        enable_website_blocking: false,
-        hide_sidebar_recommendations: false
-    },
-    "minimal": {
-        BTubeOn: true,
-        redirect_home: false,
-        hide_shorts: true,
-        minimal_homepage: true,
-        enable_website_blocking: true,
-        hide_sidebar_recommendations: true
-    },
-    "high-focus": {
-        BTubeOn: true,
-        redirect_home: false,
-        hide_shorts: true,
-        minimal_homepage: true,
-        enable_website_blocking: true,
-        hide_sidebar_recommendations: true
-    }
-};
-
-function detectModeFromSettings(settings) {
-    for (const [modeName, preset] of Object.entries(modePresets)) {
-        const matches = Object.keys(preset).every(key => settings[key] === preset[key]);
-        if (matches) return modeName;
-    }
-    return 'custom';
-}
-
-function normalizeMode(mode, fallback = 'minimal') {
-    return VALID_MODES.has(mode) ? mode : fallback;
-}
+const MODE_STORAGE_KEY = ArrowConfig.MODE_KEYS.mode;
+const MODE_SETTINGS_SNAPSHOT_KEY = ArrowConfig.MODE_KEYS.snapshot;
+const MODE_UPDATED_AT_KEY = ArrowConfig.MODE_KEYS.updatedAt;
+const modePresets = ArrowConfig.MODE_PRESETS;
+const detectModeFromSettings = ArrowConfig.detectMode;
+const normalizeMode = ArrowConfig.normalizeMode;
 
 function getCurrentSettingsFromUI() {
     const settings = {};
@@ -483,11 +445,7 @@ function getCurrentSettingsFromUI() {
 }
 
 function buildModeMetadata(mode, settingsSnapshot) {
-    return {
-        [MODE_STORAGE_KEY]: normalizeMode(mode, 'custom'),
-        [MODE_SETTINGS_SNAPSHOT_KEY]: settingsSnapshot,
-        [MODE_UPDATED_AT_KEY]: Date.now()
-    };
+    return ArrowConfig.createModeMetadata(mode, settingsSnapshot);
 }
 
 function formatModeLabel(mode) {
@@ -699,8 +657,8 @@ function initSettingsToggles() {
     function applyModeToCheckboxes(mode) {
         if (mode === 'custom') {
             // Restore custom settings from storage
-            chrome.storage.local.get(['btube_custom_settings', ...Object.values(settingsMap)], (data) => {
-                const custom = data.btube_custom_settings || {};
+            chrome.storage.local.get(['arrow_custom_settings', ...Object.values(settingsMap)], (data) => {
+                const custom = data.arrow_custom_settings || {};
                 Object.entries(settingsMap).forEach(([checkboxId, storageKey]) => {
                     const checkbox = document.getElementById(checkboxId);
                     if (checkbox) {
@@ -911,7 +869,7 @@ function initSettingsToggles() {
                 // Persist custom settings if in custom mode
                 if (modeToPersist === 'custom') {
                     await chrome.storage.local.set({
-                        btube_custom_settings: Object.fromEntries(
+                        arrow_custom_settings: Object.fromEntries(
                             Object.values(settingsMap).map(key => [key, toSave[key]])
                         )
                     });
@@ -938,21 +896,21 @@ function initSettingsToggles() {
                             settingsOnly[key] = val;
                         }
                     });
-                    pendingData.btube_pending_settings = settingsOnly;
+                    pendingData.arrow_pending_settings = settingsOnly;
                     
                     // Store the selected mode to preserve custom mode selection
                     const selectedMode = document.querySelector('input[name="settings-mode"]:checked')?.value;
                     if (selectedMode) {
-                        pendingData.btube_pending_mode = selectedMode;
+                        pendingData.arrow_pending_mode = selectedMode;
                     }
                 }
                 if (hasPendingBlocks) {
-                    pendingData.btube_pending_block_updates = {};
+                    pendingData.arrow_pending_block_updates = {};
                     if (toSave.blockedWebsites) {
-                        pendingData.btube_pending_block_updates.blockedWebsites = toSave.blockedWebsites;
+                        pendingData.arrow_pending_block_updates.blockedWebsites = toSave.blockedWebsites;
                     }
                     if (pendingChanges.hasDeletions) {
-                        pendingData.btube_has_pending_block_deletions = true;
+                        pendingData.arrow_has_pending_block_deletions = true;
                     }
                 }
 
@@ -969,8 +927,8 @@ function initSettingsToggles() {
                                     } else {
                                         saved = window.location.href;
                                     }
-                                    sessionStorage.setItem('btube_prev_page', saved);
-                                    logNavUpdate('[nav] btube_prev_page updated ->', saved);
+                                    sessionStorage.setItem('arrow_prev_page', saved);
+                                    logNavUpdate('[nav] arrow_prev_page updated ->', saved);
                                 } catch (e) {
                                     // ignore
                                 }
@@ -1111,23 +1069,7 @@ function initBlockingTab() {
 // Add blocked website
 async function addBlockedWebsite(rawUrl) {
     try {
-        let processedUrl = (rawUrl || '').trim();
-        if (!processedUrl) {
-            alert('Please enter a valid URL');
-            return;
-        }
-
-        // Strip protocol and www
-        processedUrl = processedUrl.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
-        // Remove trailing slash
-        processedUrl = processedUrl.replace(/\/$/, '');
-
-        // If it's just a domain, optionally strip common TLDs to normalize
-        if (!processedUrl.includes('/')) {
-            processedUrl = processedUrl.replace(/\.(com|org|net|edu|gov|co|io|ai|me|tv|info|biz|dev|app|tech|online|site|xyz|store|shop|blog|news|pro|cloud|digital|web|us|uk|ca|au|de|fr|jp|in|br|ru|cn|kr|es|it|nl|se|pl|tr|mx|za|id|th|my|sg|ph|vn|tw|hk|nz|ar|cl|pe|eg|pk|bd|ng|ke|ua|ro|cz|gr|pt|be|hu|at|ch|dk|fi|no|ie|il|sa|ae|qa|kw|om|bh|lb|jo|iq|sy|ye|ly|tn|ma|dz|sd|so|et|ug|tz|gh|sn|ci|cm|bw|zm|zw|mw|mg|mu|re|mz|ao|na|ls|sz|gm|gn|gw|sl|lr|ml|bf|ne|td|cf|ga|cg|cd|rw|bi|dj|er|ss|st|cv|sc|km|mr|eh)$/i, '');
-        }
-
-        processedUrl = processedUrl.trim();
+        let processedUrl = ArrowConfig.normalizeBlockTarget(rawUrl);
         if (!processedUrl) {
             alert('Please enter a valid URL');
             return;

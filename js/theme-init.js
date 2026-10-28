@@ -1,7 +1,7 @@
 "use strict";
 
 (function initTheme() {
-  const THEME_CACHE_KEY = 'btube_theme_cache';
+  const THEME_CACHE_KEY = 'arrow_theme_cache';
   const root = document.documentElement;
   const params = new URLSearchParams(window.location.search);
 

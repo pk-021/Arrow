@@ -4,7 +4,7 @@ function showNotification(message, type = 'info') {
         chrome.notifications.create({
             type: 'basic',
             iconUrl: 'assets/logo_v2.png',
-            title: 'BTube',
+            title: 'Arrow',
             message: message
         });
     }
@@ -32,71 +32,22 @@ function applyDarkMode() {
 
 // Mapping HTML checkbox IDs -> Storage keys
 const settingsMap = {
-    "extension-online": "BTubeOn",
+    "extension-online": "ArrowOn",
     "redirect-subscriptions": "redirect_home",
     "disable-shorts": "hide_shorts",
     "minimal-homepage": "minimal_homepage"
 };
 
-const MODE_STORAGE_KEY = 'btube_mode';
-const MODE_SETTINGS_SNAPSHOT_KEY = 'btube_mode_settings_snapshot';
-const MODE_UPDATED_AT_KEY = 'btube_mode_updated_at';
-const SETTINGS_SNAPSHOT_KEYS = [
-    'BTubeOn',
-    'redirect_home',
-    'hide_shorts',
-    'minimal_homepage',
-    'enable_website_blocking',
-    'hide_sidebar_recommendations'
-];
-
-const modePresets = {
-    off: {
-        BTubeOn: false,
-        redirect_home: false,
-        hide_shorts: false,
-        minimal_homepage: false,
-        enable_website_blocking: false,
-        hide_sidebar_recommendations: false
-    },
-    minimal: {
-        BTubeOn: true,
-        redirect_home: false,
-        hide_shorts: true,
-        minimal_homepage: true,
-        enable_website_blocking: true,
-        hide_sidebar_recommendations: true
-    },
-    'high-focus': {
-        BTubeOn: true,
-        redirect_home: false,
-        hide_shorts: true,
-        minimal_homepage: true,
-        enable_website_blocking: true,
-        hide_sidebar_recommendations: true
-    }
-};
-
-function detectModeFromSettings(settings) {
-    for (const [modeName, preset] of Object.entries(modePresets)) {
-        const matches = Object.keys(preset).every((key) => settings[key] === preset[key]);
-        if (matches) return modeName;
-    }
-    return 'custom';
-}
+const MODE_STORAGE_KEY = ArrowConfig.MODE_KEYS.mode;
+const MODE_SETTINGS_SNAPSHOT_KEY = ArrowConfig.MODE_KEYS.snapshot;
+const MODE_UPDATED_AT_KEY = ArrowConfig.MODE_KEYS.updatedAt;
+const SETTINGS_SNAPSHOT_KEYS = ArrowConfig.SETTINGS_KEYS;
+const detectModeFromSettings = ArrowConfig.detectMode;
 
 async function persistModeMetadataFromStorage() {
     const current = await chrome.storage.local.get(SETTINGS_SNAPSHOT_KEYS);
-    const snapshot = {};
-    SETTINGS_SNAPSHOT_KEYS.forEach((key) => {
-        snapshot[key] = !!current[key];
-    });
-
-    await chrome.storage.local.set({
-        [MODE_STORAGE_KEY]: detectModeFromSettings(snapshot),
-        [MODE_SETTINGS_SNAPSHOT_KEY]: snapshot,
-        [MODE_UPDATED_AT_KEY]: Date.now()
-    });
+    const settingsSnapshot = ArrowConfig.snapshot(current, true);
+    await chrome.storage.local.set(ArrowConfig.createModeMetadata(detectModeFromSettings(settingsSnapshot), settingsSnapshot));
 }
 
 

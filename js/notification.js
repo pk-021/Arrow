@@ -35,7 +35,7 @@ function showNotification() {
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'assets/logo_v2.png',
-      title: 'BTube',
+      title: 'Arrow',
       message: message
     });
     setTimeout(() => {

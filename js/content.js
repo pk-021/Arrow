@@ -4,11 +4,11 @@
 let storage = chrome.storage.local;
 
 // Off mode preset (all features disabled)
-let offSettings = {
+const offSettings = {
     minimal_homepage: false,
     redirect_home: false,
     hide_shorts: false,
-    BTubeOn: false,
+    ArrowOn: false,
     hide_sidebar_recommendations: false
 }
 
@@ -43,7 +43,7 @@ function getSettings(callback, keys = null) {
 
 function updateCurrentSettings() {
     getSettings(settings => {
-        if (!settings.BTubeOn) {
+        if (!settings.ArrowOn) {
             settingCache = offSettings;
         }
         else {
@@ -82,8 +82,8 @@ function update_home_props() {
     const url = window.location.href;
     if (/^https:\/\/.*\.youtube\.com\/(?:\?.*)?$/.test(url)) {
         document.documentElement.setAttribute("is_home", true);
-        searchbar = document.querySelector("#center");
-        searchbar.append(homeCenterLogo);
+        const searchbar = document.querySelector("#center");
+        if (searchbar && !searchbar.contains(homeCenterLogo)) searchbar.append(homeCenterLogo);
     }
     else {
         document.documentElement.setAttribute("is_home", false)
@@ -106,8 +106,8 @@ function navigateToSubscriptions() {
 
     // If already on subscriptions, do nothing
     if (window.location.pathname === url) return;
-    link = document.querySelector('a[title="Subscriptions"]');
-    link.click();
+    const link = document.querySelector('a[title="Subscriptions"]');
+    if (link) link.click();
 }
 
 function handleLogoClick(event) {
@@ -123,8 +123,11 @@ function handleLogoClick(event) {
 function configureLogo() {
     const logo = document.querySelector("a#logo");
     if (logo) {
-        logo.addEventListener("click", handleLogoClick, true);
-        logo.addEventListener("touchend", handleLogoClick, true);
+        if (!logo.dataset.arrowRedirectListener) {
+            logo.addEventListener("click", handleLogoClick, true);
+            logo.addEventListener("touchend", handleLogoClick, true);
+            logo.dataset.arrowRedirectListener = 'true';
+        }
     }
     else {
         setTimeout(configureLogo, 100);
@@ -138,7 +141,7 @@ function applyAttributes(settings) {
     Object.keys(settings).forEach(key => {
         if (
             key.includes("hide") ||
-            key === "BTubeOn" ||
+            key === "ArrowOn" ||
             key === "minimal_homepage" ||
             key === "redirect_home"
         ) {

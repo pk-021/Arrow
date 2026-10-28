@@ -1,6 +1,6 @@
-# BTube (BetterYoutube)
+# Arrow
 
-BTube is a browser extension that enhances your YouTube experience by making it more productive and less distracting. It provides features to customize your homepage, block unwanted content, and manage the extension from a compact popup.
+Arrow is a browser extension that enhances your YouTube experience by making it more productive and less distracting. It provides features to customize your homepage, block unwanted content, and manage the extension from a compact popup.
 
 ---
 
@@ -26,7 +26,7 @@ BTube is a browser extension that enhances your YouTube experience by making it 
 - The extension will now be installed.
 
 ### 2. Open the Popup
-- Click the **BTube icon** in your browser toolbar to open the popup.  
+- Click the **Arrow icon** in your browser toolbar to open the popup.
 - From here, you can:  
   - Access settings and toggle dark mode.  
 ### 3. Settings
@@ -75,6 +75,12 @@ BTube is a browser extension that enhances your YouTube experience by making it 
 3. Edit source files as needed.  
    - Popup and settings UIs are in HTML/CSS/JS.
    - Content scripts modify YouTube in real time.
+
+## Specifications
+
+Current component behavior and shared contracts are documented in
+[`docs/specs`](docs/specs/README.md). Use the included verification checklist
+after loading the extension unpacked.
 
 ---
 

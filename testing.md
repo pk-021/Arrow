@@ -1,4 +1,4 @@
-# BTube Testing Checklist
+# Arrow Testing Checklist
 
 Use this checklist to verify the extension after changes and before releasing a build. The goal is to catch UI regressions, broken flows, storage issues, and runtime console errors.
 

@@ -51,11 +51,11 @@ let currentResetIndex = 0;
 const URL_FROM_PARAM = new URLSearchParams(window.location.search).get("from");
 const IS_EMBEDDED_LOGIN = new URLSearchParams(window.location.search).get('embedded') === '1';
 const LOGIN_SESSION = new URLSearchParams(window.location.search).get('session');
-const SAVED_PREV_KEY = 'btube_prev_page';
+const SAVED_PREV_KEY = 'arrow_prev_page';
 
 function notifyParent(type, detail = {}) {
-  if (window.BTubeLoginHost && typeof window.BTubeLoginHost[type] === 'function') {
-    window.BTubeLoginHost[type](detail);
+  if (window.ArrowLoginHost && typeof window.ArrowLoginHost[type] === 'function') {
+    window.ArrowLoginHost[type](detail);
     return true;
   }
 
@@ -65,7 +65,7 @@ function notifyParent(type, detail = {}) {
 
   try {
     window.parent.postMessage({
-      source: 'btube-login-overlay',
+      source: 'arrow-login-overlay',
       type,
       session: LOGIN_SESSION || null,
       detail
@@ -116,67 +116,13 @@ function getSavedPreviousPage() {
   return v;
 }
 
-const MODE_STORAGE_KEY = 'btube_mode';
-const MODE_SETTINGS_SNAPSHOT_KEY = 'btube_mode_settings_snapshot';
-const MODE_UPDATED_AT_KEY = 'btube_mode_updated_at';
-const VALID_MODES = new Set(['off', 'minimal', 'high-focus', 'custom']);
-
-const modePresets = {
-  off: {
-    BTubeOn: false,
-    redirect_home: false,
-    hide_shorts: false,
-    minimal_homepage: false,
-    enable_website_blocking: false,
-    hide_sidebar_recommendations: false
-  },
-  minimal: {
-    BTubeOn: true,
-    redirect_home: false,
-    hide_shorts: true,
-    minimal_homepage: true,
-    enable_website_blocking: true,
-    hide_sidebar_recommendations: true
-  },
-  'high-focus': {
-    BTubeOn: true,
-    redirect_home: false,
-    hide_shorts: true,
-    minimal_homepage: true,
-    enable_website_blocking: true,
-    hide_sidebar_recommendations: true
-  }
-};
-
-function normalizeMode(mode, fallback = 'minimal') {
-  return VALID_MODES.has(mode) ? mode : fallback;
-}
-
-function detectModeFromSettings(settings) {
-  for (const [modeName, preset] of Object.entries(modePresets)) {
-    const matches = Object.keys(preset).every(key => settings[key] === preset[key]);
-    if (matches) return modeName;
-  }
-  return 'custom';
-}
-
-function pickSettingsSnapshot(settings) {
-  const keys = [
-    'BTubeOn',
-    'redirect_home',
-    'hide_shorts',
-    'minimal_homepage',
-    'enable_website_blocking',
-    'hide_sidebar_recommendations'
-  ];
-
-  return keys.reduce((acc, key) => {
-    if (key in settings) {
-      acc[key] = settings[key];
-    }
-    return acc;
-  }, {});
-}
+const MODE_STORAGE_KEY = ArrowConfig.MODE_KEYS.mode;
+const MODE_SETTINGS_SNAPSHOT_KEY = ArrowConfig.MODE_KEYS.snapshot;
+const MODE_UPDATED_AT_KEY = ArrowConfig.MODE_KEYS.updatedAt;
+const modePresets = ArrowConfig.MODE_PRESETS;
+const normalizeMode = ArrowConfig.normalizeMode;
+const detectModeFromSettings = ArrowConfig.detectMode;
+const pickSettingsSnapshot = ArrowConfig.snapshot;
 
 function safeRuntimeSendMessage(payload) {
   try {
@@ -200,8 +146,8 @@ function showContainer(container) {
 }
 
 function goBackToPreviousPage() {
-  if (window.BTubeLoginHost && typeof window.BTubeLoginHost.close === 'function') {
-    window.BTubeLoginHost.close();
+  if (window.ArrowLoginHost && typeof window.ArrowLoginHost.close === 'function') {
+    window.ArrowLoginHost.close();
     return;
   }
 
@@ -319,10 +265,10 @@ async function checkPassword() {
 
   if (enteredPass === password) {
     // Apply any pending settings or block updates after successful login
-    chrome.storage.local.get(['btube_pending_settings', 'btube_pending_block_updates', 'btube_has_pending_block_deletions', 'btube_pending_mode'], (data) => {
-      const pendingSettings = data.btube_pending_settings || null;
-      const pendingBlocks = data.btube_pending_block_updates || null;
-      const pendingMode = data.btube_pending_mode || null;
+    chrome.storage.local.get(['arrow_pending_settings', 'arrow_pending_block_updates', 'arrow_has_pending_block_deletions', 'arrow_pending_mode'], (data) => {
+      const pendingSettings = data.arrow_pending_settings || null;
+      const pendingBlocks = data.arrow_pending_block_updates || null;
+      const pendingMode = data.arrow_pending_mode || null;
 
       // Build a single payload to set in one operation
       const toSet = {};
@@ -338,9 +284,9 @@ async function checkPassword() {
         toSet[MODE_UPDATED_AT_KEY] = Date.now();
         hadChanges = true;
         
-        // If custom mode was selected, also save it to btube_custom_settings
+        // If custom mode was selected, also save it to arrow_custom_settings.
         if (modeToPersist === 'custom') {
-          toSet.btube_custom_settings = snapshot;
+          toSet.arrow_custom_settings = snapshot;
         }
       }
 
@@ -354,7 +300,7 @@ async function checkPassword() {
       if (hadChanges) {
               chrome.storage.local.set(toSet, () => {
           // Clean up pending keys/flags
-          const keysToRemove = ['btube_pending_settings', 'btube_pending_block_updates', 'btube_has_pending_block_deletions', 'btube_original_block_lists', 'btube_pending_mode'];
+          const keysToRemove = ['arrow_pending_settings', 'arrow_pending_block_updates', 'arrow_has_pending_block_deletions', 'arrow_original_block_lists', 'arrow_pending_mode'];
                 chrome.storage.local.remove(keysToRemove, () => {
                   // Notify success (safe)
                   safeRuntimeSendMessage({
@@ -517,7 +463,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // Notify parent when embedded login is ready to be shown (prevents iframe flash)
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
-    if (window.BTubeLoginHost) {
+    if (window.ArrowLoginHost) {
       return;
     }
 

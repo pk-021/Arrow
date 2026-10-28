@@ -1,144 +1,89 @@
-// BTube Overlay Notification System
 "use strict";
 
-class BTubeNotificationOverlay {
+class ArrowNotificationOverlay {
   constructor() {
-    this.notifications = [];
-    this.container = null;
-    this.notificationId = 0;
-    this.init();
-  }
-
-  init() {
-    // Create the main overlay container
-    this.createContainer();
-    
-    // Listen for messages from background script
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'showOverlayNotification') {
-        try {
-          this.showNotification(message.message, message.notificationType || 'info');
-          sendResponse({ success: true });
-        } catch (error) {
-          console.error('Error showing overlay notification:', error);
-          sendResponse({ success: false, error: error.message });
-        }
-      }
-      return true; // Keep the message channel open
+    this.notifications = new Map();
+    this.nextId = 0;
+    this.container = this.createContainer();
+    chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+      if (message?.type !== 'showOverlayNotification') return false;
+      respond({ success: true, notificationId: this.show(message.message, message.notificationType) });
+      return false;
     });
-    
-    console.log('BTube overlay notification system initialized');
   }
 
   createContainer() {
-    // Remove existing container if any
-    if (this.container) {
-      this.container.remove();
-    }
-
-    // Create overlay container
-    this.container = document.createElement('div');
-    this.container.className = 'btube-notification-overlay';
-    this.container.setAttribute('data-btube-overlay', 'true');
-    
-    // Append to document
-    document.body.appendChild(this.container);
+    document.querySelector('[data-arrow-overlay]')?.remove();
+    const container = document.createElement('div');
+    container.className = 'arrow-notification-overlay';
+    container.dataset.arrowOverlay = 'true';
+    document.body.append(container);
+    return container;
   }
 
-  showNotification(message, type = 'info', duration = 5000) {
-    const notificationId = ++this.notificationId;
-    
-    // Create notification element
-    const notification = this.createNotificationElement(message, type, notificationId);
-    
-    // Add to container
-    this.container.appendChild(notification);
-    this.notifications.push({ id: notificationId, element: notification });
+  show(message, type = 'info', duration = 5000) {
+    const id = ++this.nextId;
+    const notification = document.createElement('div');
+    notification.className = `arrow-notification arrow-notification--${type}`;
+    notification.dataset.notificationId = String(id);
 
-    // Trigger show animation
+    const header = document.createElement('div');
+    header.className = 'arrow-notification-header';
+    const logo = document.createElement('img');
+    logo.src = chrome.runtime.getURL('assets/logo_v2.png');
+    logo.alt = 'Arrow';
+    logo.className = 'arrow-notification-logo';
+    const title = document.createElement('span');
+    title.className = 'arrow-notification-title';
+    title.textContent = 'Arrow';
+    const close = document.createElement('button');
+    close.className = 'arrow-notification-close';
+    close.type = 'button';
+    close.ariaLabel = 'Close notification';
+    close.textContent = '×';
+    header.append(logo, title, close);
+
+    const body = document.createElement('div');
+    body.className = 'arrow-notification-body';
+    const text = document.createElement('p');
+    text.className = 'arrow-notification-message';
+    text.textContent = String(message || '');
+    body.append(text);
+
+    const actions = document.createElement('div');
+    actions.className = 'arrow-notification-actions';
+    const okay = document.createElement('button');
+    okay.className = 'arrow-notification-btn';
+    okay.type = 'button';
+    okay.textContent = 'OK';
+    actions.append(okay);
+
+    const progress = document.createElement('div');
+    progress.className = 'arrow-notification-progress';
+    notification.append(header, body, actions, progress);
+    const dismiss = () => this.remove(id);
+    close.addEventListener('click', dismiss);
+    okay.addEventListener('click', dismiss);
+
+    this.container.append(notification);
+    const timer = setTimeout(dismiss, duration);
+    this.notifications.set(id, { notification, timer });
     requestAnimationFrame(() => {
       notification.classList.add('show');
+      progress.classList.add('animate');
     });
-
-    // Auto-close timer
-    const timer = setTimeout(() => {
-      this.removeNotification(notificationId);
-    }, duration);
-
-    // Store timer reference
-    notification.dataset.timer = timer;
-
-    return notificationId;
+    return id;
   }
 
-  createNotificationElement(message, type, id) {
-    const notification = document.createElement('div');
-    notification.className = 'btube-notification';
-    notification.dataset.notificationId = id;
-
-    // Get logo URL
-    const logoUrl = chrome.runtime.getURL('assets/logo_v2.png');
-
-    notification.innerHTML = `
-      <div class="btube-notification-header">
-        <img src="${logoUrl}" alt="BTube" class="btube-notification-logo">
-        <span class="btube-notification-title">BTube</span>
-        <button class="btube-notification-close" data-action="close">&times;</button>
-      </div>
-      <div class="btube-notification-body">
-        <p class="btube-notification-message">${this.escapeHtml(message)}</p>
-      </div>
-      <div class="btube-notification-actions">
-        <button class="btube-notification-btn" data-action="ok">OK</button>
-      </div>
-      <div class="btube-notification-progress"></div>
-    `;
-
-    // Add event listeners
-    notification.addEventListener('click', (e) => {
-      const action = e.target.dataset.action;
-      if (action === 'close' || action === 'ok') {
-        this.removeNotification(id);
-      }
-    });
-
-    // Start progress bar animation
-    setTimeout(() => {
-      const progressBar = notification.querySelector('.btube-notification-progress');
-      if (progressBar) {
-        progressBar.classList.add('animate');
-      }
-      // Overlay notification system replaced with Chrome notifications
-      function showNotification(message, type = 'info') {
-        if (chrome && chrome.notifications) {
-          chrome.notifications.create({
-            type: 'basic',
-            iconUrl: 'assets/logo_v2.png',
-            title: 'BTube',
-            message: message
-          });
-        }
-      }
-      // Remove from notifications array
-      this.notifications = this.notifications.filter(n => n.id !== id);
-    }, 300);
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Public method to show notification (can be called from other scripts)
-  static show(message, type = 'info') {
-    if (window.btubeOverlay) {
-      return window.btubeOverlay.showNotification(message, type);
-    }
+  remove(id) {
+    const entry = this.notifications.get(id);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    entry.notification.classList.remove('show');
+    entry.notification.addEventListener('transitionend', () => entry.notification.remove(), { once: true });
+    setTimeout(() => entry.notification.remove(), 300);
+    this.notifications.delete(id);
   }
 }
 
-// Initialize overlay system
-if (!window.btubeOverlay) {
-  window.btubeOverlay = new BTubeNotificationOverlay();
-}
+window.arrowOverlay ||= new ArrowNotificationOverlay();
