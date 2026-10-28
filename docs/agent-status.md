@@ -1,12 +1,7 @@
 # Agent status
 
-**Status:** Complete â€” Hide comments setting verified
+**Status:** Complete — selector no longer assumes `#secondary-timer` is a section element; live browser verification pending.
 
-**Doing:** Added Hide comments to Custom, enabled it in High Focus, and scoped
-watch-page comment hiding to the shared content setting.
+**Doing:** `css/content.css` now targets `div#related` under any `#secondary-timer` element when sidebar recommendations are hidden.
 
-**Next:** Reload the unpacked extension and run verification case 17 on a
-YouTube watch page.
-
-This file is intentionally short. Read it before each task and update it before
-implementation changes and after verification.
+**Next:** Run verification case 25 on a desktop YouTube watch page. Static check confirmed the selector is setting-gated and tag-independent.

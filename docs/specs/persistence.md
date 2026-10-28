@@ -53,3 +53,5 @@ per `set`; browser extension APIs do not offer a distributed transaction with
 declarative-network rules. Therefore Arrow guarantees atomic durable settings
 commits and idempotent, eventually reconciled rule projection rather than
 claiming a cross-API transaction.
+
+Session keys are part of the same revisioned local-storage commit contract. Starting and skipping run in the worker commit queue, so simultaneous popup actions cannot overspend the daily allowance. A skipped session keeps its spent minutes. The local calendar date determines refill; older stores without session fields read as a fresh day. The worker reprojects redirect rules on startup and on its deadline alarm.

@@ -43,3 +43,24 @@
     `ytd-comments#comments` is hidden. Select Minimal and confirm comments are
     visible. In Custom, toggle Hide comments and confirm the page updates after
     saving.
+## Session state and verification
+
+Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` worker messages. They validate current allowance and deadline inside the serialized queue, then use the same journaled revision commit path as settings. Legacy stores without session keys read as a fresh day with the default budget. A prior day's usage reads as zero without deleting history until the next mutation. A budget reduction never refunds used time.
+
+18. Set a 30-minute budget. Start 10 minutes and confirm the seven-heart display loses the correct 10-minute fraction immediately, the timer starts near 10:00, and a second start is unavailable. Close/reopen the popup and confirm the deadline is preserved. Skip and confirm the full 10 minutes remains spent and the saved extension behavior resumes. Start sessions until no time remains and confirm the refill message. Verify 15-minute choice is unavailable when less than 15 minutes remain.
+19. With a session running, reload a YouTube tab and confirm all Arrow page effects and redirect rules are inactive. Let the deadline pass with the popup closed and confirm the saved settings and rules resume. Restart the service worker/browser during a session and repeat. Change the local date and confirm the new daily allowance appears without carrying yesterday's active pause forward.
+20. Open Home at full, partial, and empty allowance. Confirm the settings button is on the header right, Get a pass for: appears without a Daily Health title, the three session buttons stack vertically, and remaining minutes sit closely below the hearts without a subtitle or percentage. Check narrow width and dark theme.
+
+21. Click each available pass duration and confirm the dialog names the duration. Cancel and Escape without any deduction. Confirm a pass and verify the full duration is deducted once, the dialog closes, and the countdown starts. Verify focus returns to the triggering button after cancellation.
+
+
+
+
+22. At 15, 30, 45, and 60-minute allowances, confirm seven pixel-edged hearts appear. Start a five-minute pass and confirm the fill decreases by exactly five minutes relative to the per-heart value of budget divided by seven, including partial hearts. At zero remaining, confirm seven empty hearts.
+
+
+23. Open Custom Settings at the preferred popup size and a constrained height. Confirm no unnecessary prominent scrollbar at preferred size; at constrained height, scroll through every setting using wheel, touchpad, and keyboard. Verify the slim scrollbar sits flush with the popup right edge, its hover state works in light and dark themes, and controls retain their right inset without clipping.
+
+24. Inspect popup Home, Settings, Mode, Custom, and password views in light and dark themes. Confirm local SVG icons render sharply at normal and high display scale, align with their controls, and have accessible button names. Confirm heart fill remains accurate for all budget choices and no icon depends on a remote network request.
+25. On a desktop YouTube watch page containing `#secondary-timer div#related`, enable Hide Sidebar Recommendations and confirm only that related container is hidden within the section. Disable the setting and confirm it returns. Check other children of `#secondary-timer` remain usable.
+

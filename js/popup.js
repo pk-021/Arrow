@@ -14,6 +14,68 @@ let activeTab = "home";
 let activeSettingsView = "modes";
 let hasPendingSettings = false;
 let arrowOn = true;
+let sessionState = {};
+let sessionTick;
+let pendingSessionMinutes = 0;
+let sessionTrigger = null;
+function closeSessionConfirm() {
+  document.getElementById('session-confirm-overlay').hidden = true;
+  pendingSessionMinutes = 0;
+  sessionTrigger?.focus();
+  sessionTrigger = null;
+}
+function sessionDay(now = Date.now()) {
+  const d = new Date(now);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function pixelHeart(fillFraction) {
+  const heart = document.createElement('span');
+  heart.className = 'pixel-heart';
+  heart.setAttribute('aria-hidden', 'true');
+  heart.style.setProperty('--heart-fill', `${fillFraction * 100}%`);
+  const fill = document.createElement('span');
+  fill.className = 'pixel-heart-fill';
+  heart.append(fill);
+  return heart;
+}
+function renderSession() {
+  const now = Date.now();
+  const budget = [15, 30, 45, 60].includes(sessionState.arrow_daily_session_minutes) ? sessionState.arrow_daily_session_minutes : 30;
+  const sameDay = sessionState.arrow_session_day === sessionDay(now);
+  const used = sameDay ? Math.min(budget, Number(sessionState.arrow_session_used_minutes) || 0) : 0;
+  const remaining = Math.max(0, budget - used);
+  const end = sameDay ? Number(sessionState.arrow_session_end_at) || 0 : 0;
+  const active = end > now;
+  document.getElementById('session-minutes').textContent = `${remaining} min remaining`;
+  const hearts = document.getElementById('session-hearts');
+  hearts.setAttribute('aria-label', `${remaining} of ${budget} minutes remaining`);
+  const heartSignature = `${budget}:${remaining}`;
+  if (hearts.dataset.signature !== heartSignature) {
+    hearts.replaceChildren();
+    const minutesPerHeart = budget / 7;
+    for (let i = 0; i < 7; i++) {
+      hearts.append(pixelHeart(Math.max(0, Math.min(1, (remaining - i * minutesPerHeart) / minutesPerHeart))));
+    }
+    hearts.dataset.signature = heartSignature;
+  }
+  document.getElementById('session-choices').hidden = active || remaining === 0;
+  document.getElementById('session-active').hidden = !active;
+  document.getElementById('session-empty').hidden = active || remaining > 0;
+  document.querySelectorAll('[data-session-minutes]').forEach(button => {
+    button.disabled = Number(button.dataset.sessionMinutes) > remaining;
+  });
+  if (active) {
+    const seconds = Math.ceil((end - now) / 1000);
+    document.getElementById('session-clock').textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    const duration = Number(sessionState.arrow_session_duration_minutes) || 15;
+    document.getElementById('session-ring').style.setProperty('--progress', `${Math.max(0, Math.min(100, (end - now) / (duration * 60000) * 100))}%`);
+  }
+}
+async function refreshSession() {
+  sessionState = await chrome.storage.local.get(['arrow_daily_session_minutes', 'arrow_session_day', 'arrow_session_used_minutes', 'arrow_session_end_at', 'arrow_session_duration_minutes']);
+  document.getElementById('session-budget').value = String(sessionState.arrow_daily_session_minutes || 30);
+  renderSession();
+}
 
 function applyTheme(theme) {
   const dark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -61,7 +123,7 @@ function markActiveMode(mode) {
 }
 
 function showTab(name) {
-  ["home", "settings"].forEach((tab) => {
+  ["home", "preferences", "settings"].forEach((tab) => {
     const view = document.getElementById(`tab-${tab}`);
     if (!view) return;
     const visible = tab === name;
@@ -144,8 +206,55 @@ window.addEventListener("DOMContentLoaded", async () => {
     await ArrowState.commit({ themeSetting: theme.value });
   });
 
+  document.getElementById("open-preferences-btn")?.addEventListener("click", () => showTab("preferences"));
+  document.getElementById("back-from-preferences-btn")?.addEventListener("click", () => showTab("home"));
   document.getElementById("home-mode-row")?.addEventListener("click", () => showTab("settings"));
-  document.getElementById("back-from-settings-btn")?.addEventListener("click", () => showTab("home"));
+  document.getElementById("back-from-settings-btn")?.addEventListener("click", () => showTab("preferences"));
+  document.getElementById('session-budget').addEventListener('change', async (event) => {
+    try { await ArrowState.commit({ arrow_daily_session_minutes: Number(event.target.value) }); await refreshSession(); }
+    catch (error) { document.getElementById('session-error').textContent = error.message; document.getElementById('session-error').hidden = false; }
+  });
+  document.querySelectorAll('[data-session-minutes]').forEach(button => button.addEventListener('click', () => {
+    pendingSessionMinutes = Number(button.dataset.sessionMinutes);
+    sessionTrigger = button;
+    document.getElementById('session-confirm-description').textContent = `Use a ${pendingSessionMinutes}-minute pass? All ${pendingSessionMinutes} minutes will be deducted immediately.`;
+    document.getElementById('session-confirm-overlay').hidden = false;
+    document.getElementById('session-confirm-cancel').focus();
+  }));
+  document.getElementById('session-confirm-cancel').addEventListener('click', closeSessionConfirm);
+  document.getElementById('session-confirm-overlay').addEventListener('click', event => {
+    if (event.target.id === 'session-confirm-overlay') closeSessionConfirm();
+  });
+  document.addEventListener('keydown', event => {
+    if (document.getElementById('session-confirm-overlay').hidden) return;
+    if (event.key === 'Escape') { event.preventDefault(); closeSessionConfirm(); }
+    if (event.key === 'Tab') {
+      const cancel = document.getElementById('session-confirm-cancel');
+      const start = document.getElementById('session-confirm-start');
+      if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); start.focus(); }
+      else if (!event.shiftKey && document.activeElement === start) { event.preventDefault(); cancel.focus(); }
+    }
+  });
+  document.getElementById('session-confirm-start').addEventListener('click', async () => {
+    const minutes = pendingSessionMinutes;
+    const start = document.getElementById('session-confirm-start');
+    if (!minutes || start.disabled) return;
+    start.disabled = true;
+    try {
+      await ArrowState.startSession(minutes);
+      closeSessionConfirm();
+      await refreshSession();
+    } catch (error) {
+      document.getElementById('session-error').textContent = error.message;
+      document.getElementById('session-error').hidden = false;
+      closeSessionConfirm();
+      await refreshSession();
+    } finally { start.disabled = false; }
+  });
+  document.getElementById('session-skip').addEventListener('click', async () => {
+    try { await ArrowState.skipSession(); await refreshSession(); }
+    catch (error) { document.getElementById('session-error').textContent = error.message; document.getElementById('session-error').hidden = false; }
+  });
   document.getElementById("back-to-modes-btn")?.addEventListener("click", () => showSettingsView("modes"));
   document.getElementById("edit-custom-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
@@ -174,10 +283,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     success: async () => { document.getElementById("login-overlay").hidden = true; await loadSettings(); showTab("home"); }
   };
   await loadSettings();
+  await refreshSession();
+  sessionTick = setInterval(renderSession, 250);
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     const modeKeys = ["ArrowOn", ...Object.values(SETTINGS), MODE_KEYS.mode];
     if (modeKeys.some((key) => key in changes)) refreshHomeMode().catch(console.error);
+    if (Object.keys(changes).some(key => key.startsWith('arrow_session_') || key === 'arrow_daily_session_minutes')) refreshSession().catch(console.error);
   });
   if (window.location.hash.startsWith("#settings")) showTab("settings");
   document.body.setAttribute("data-loaded", "true");

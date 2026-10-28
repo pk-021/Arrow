@@ -49,3 +49,10 @@ or apply mobile-only `ytm-*` selectors because the content script matches
 When `hide_comments="true"`, the stylesheet hides the watch-page comments
 surface using `ytd-comments#comments`. The rule is scoped to that setting and
 does not hide comment controls when the setting is off.
+
+When `hide_sidebar_recommendations="true"`, the stylesheet also hides
+`div#related` inside any element with `id="secondary-timer"` on desktop YouTube watch pages.
+This target must not hide other children of that section or apply when the
+setting is false.
+
+

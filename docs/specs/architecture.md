@@ -41,3 +41,7 @@ offers both choices. Every surface reads the persisted `arrow_mode` when it is
 valid, so equivalent presets retain their chosen identity. Only missing or
 invalid mode metadata is derived from the current setting booleans; any
 combination not matching a preset is then `custom`.
+
+## Session state
+
+The worker owns daily pause mutations through `arrow:session-start` and `arrow:session-skip`. It reserves whole session minutes when starting, stores a wall-clock deadline, and serializes the journaled commit with settings writes. The effective extension state is paused while that deadline is in the future on the stored local day. The saved mode and feature settings remain intact. `chrome.alarms` reconciles redirect rules on expiry, while content scripts compare the deadline on every read and schedule a local expiry refresh.

@@ -547,7 +547,17 @@ html[dark_mode="true"] .mode-option.mode-active input[type="radio"]:checked + .m
 
 .settings-custom-view {
   z-index: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 112, 133, .35) transparent;
 }
+
+.settings-custom-view::-webkit-scrollbar { width: 6px; }
+.settings-custom-view::-webkit-scrollbar-track { background: transparent; }
+.settings-custom-view::-webkit-scrollbar-thumb { background: rgba(102, 112, 133, .35); border-radius: 999px; }
+.settings-custom-view:hover::-webkit-scrollbar-thumb { background: rgba(102, 112, 133, .65); }
+html[dark_mode="true"] .settings-custom-view { scrollbar-color: rgba(170, 183, 202, .4) transparent; }
+html[dark_mode="true"] .settings-custom-view::-webkit-scrollbar-thumb { background: rgba(170, 183, 202, .4); }
+html[dark_mode="true"] .settings-custom-view:hover::-webkit-scrollbar-thumb { background: rgba(170, 183, 202, .7); }
 
 .settings-mode-view.settings-view-animating,
 .settings-custom-view.settings-view-animating {
@@ -791,7 +801,7 @@ html[dark_mode="true"] .edit-custom-btn:hover {
   background: #2a8ede;
 }
 
-.edit-custom-btn svg {
+.edit-custom-btn .ui-icon {
   flex-shrink: 0;
 }
 
@@ -1403,6 +1413,8 @@ body {
 
 .content-area { background: var(--bg); }
 .tab-view { padding: 0 16px 18px; }
+#tab-settings { padding-right: 0; }
+.settings-mode-view, .settings-custom-view { padding-right: 16px; }
 .line { padding: 20px 4px 12px; border: 0; }
 .logo { color: var(--text); font-size: 1.125rem; font-weight: 750; letter-spacing: -0.025em; }
 .logo img { width: 26px; height: 26px; }
@@ -1511,6 +1523,8 @@ html[dark_mode="true"] .theme-selector { background-image: none; }
 
 @media (max-width: 360px), (max-height: 480px) {
   .tab-view { padding-inline: 12px; }
+  #tab-settings { padding-right: 0; }
+  .settings-mode-view, .settings-custom-view { padding-right: 12px; }
   .line { padding-top: 14px; }
   .home-row { min-height: 68px; padding: 12px; }
   .popup-footer.has-pending { padding-inline: 12px; }
@@ -1541,4 +1555,44 @@ html[dark_mode="true"] .theme-selector { background-image: none; }
   border: 0;
   background: transparent;
 }
+
+/* Daily session home */
+.ui-icon { display: inline-block; width: 20px; height: 20px; flex: none; background: currentColor; vertical-align: middle; mask-position: center; mask-repeat: no-repeat; mask-size: contain; }
+.icon-settings { mask-image: url("../assets/icon-settings.svg"); }
+.icon-arrow-left { mask-image: url("../assets/icon-arrow-left.svg"); }
+.icon-arrow-right { mask-image: url("../assets/icon-arrow-right.svg"); }
+.icon-chevron-right { mask-image: url("../assets/icon-chevron-right.svg"); }
+.icon-edit { mask-image: url("../assets/icon-edit.svg"); width: 16px; height: 16px; }
+.theme-selector, .theme-selector:hover { background-image: url("../assets/icon-chevron-down.svg"); background-repeat: no-repeat; background-position: calc(100% - 12px) center; background-size: 16px 16px; }
+html[dark_mode="true"] .theme-selector, html[dark_mode="true"] .theme-selector:hover { background-image: url("../assets/icon-chevron-down-dark.svg"); }
+.header-settings-btn { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; }
+.header-settings-btn:hover { background: var(--hover); }
+.header-settings-btn:focus-visible, .session-buttons button:focus-visible, .session-skip:focus-visible { outline: none; box-shadow: var(--focus); }
+.line .logo { margin-right: auto; }
+.session-home { padding: 26px 4px; text-align: center; }
+.session-hearts { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; min-height: 32px; margin: 8px 0 0; }
+.session-minutes { margin: 2px 0 28px; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.pixel-heart { display: block; width: 30px; height: 30px; flex: none; background: var(--line); mask: url("../assets/heart-pixel.svg") center / contain no-repeat; }
+.pixel-heart-fill { display: block; width: var(--heart-fill); height: 100%; background: #e05264; }
+.session-choices p { color: var(--muted); font-size: .9rem; margin-bottom: 15px; }
+.session-buttons { display: flex; flex-direction: column; gap: 8px; }
+.session-buttons button { flex: 1; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+.session-buttons button:hover:not(:disabled) { border-color: var(--primary); background: var(--hover); }
+.session-buttons button:disabled { opacity: .4; cursor: not-allowed; }
+.session-active { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.session-ring { width: 158px; height: 158px; border-radius: 50%; background: conic-gradient(var(--primary) var(--progress, 100%), var(--line) 0); display: grid; place-items: center; }
+.session-ring span { width: 132px; height: 132px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-size: 1.8rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+.session-skip { min-width: 60px; min-height: 40px; border: 0; background: transparent; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: .82rem; }
+.session-empty { padding-top: 22px; color: var(--muted); }
+.session-empty .ui-icon { color: var(--primary); width: 32px; height: 32px; }
+.session-error { color: var(--danger); font-size: .85rem; }
+.session-active[hidden], .session-choices[hidden], .session-empty[hidden], .session-error[hidden] { display: none; }
+.session-confirm-overlay[hidden] { display: none; }
+.session-confirm-card { width: min(100%, 320px); box-sizing: border-box; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 18px 48px rgba(15,23,42,.28); }
+.session-confirm-card h2 { margin: 0 0 10px; font-size: 1.12rem; color: var(--text); }
+.session-confirm-card p { margin: 0 0 24px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+.session-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.session-confirm-actions button { min-height: 40px; padding: 0 14px; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+.session-confirm-actions button:focus-visible { outline: none; box-shadow: var(--focus); }
+.session-confirm-actions button:disabled { opacity: .55; cursor: wait; }
 

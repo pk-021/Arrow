@@ -44,7 +44,11 @@ function getSettings(callback, keys = null) {
 
 function updateCurrentSettings() {
     getSettings(settings => {
-        if (!settings.ArrowOn) {
+        const now = Date.now();
+        const today = new Date(now);
+        const day = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const paused = settings.arrow_session_day === day && Number(settings.arrow_session_end_at) > now;
+        if (!settings.ArrowOn || paused) {
             settingCache = offSettings;
         }
         else {
@@ -52,12 +56,13 @@ function updateCurrentSettings() {
         }
         applyAttributes(settingCache);
 
-        safeRuntimeSendMessage({ type: "toggleRedirects", enabled: settings.redirect_home });
+        safeRuntimeSendMessage({ type: "toggleRedirects", enabled: !paused && settings.ArrowOn && settings.redirect_home });
         safeRuntimeSendMessage({
             type: "toggleShorts",
-            enabled: settings.hide_shorts,
+            enabled: !paused && settings.ArrowOn && settings.hide_shorts,
             redirectToSubscriptions: settings.redirect_home
         });
+        if (paused) setTimeout(updateCurrentSettings, Math.min(Number(settings.arrow_session_end_at) - now + 20, 2147483647));
 
         //when redirect is turned on at homepage
         if (settingCache.redirect_home) {

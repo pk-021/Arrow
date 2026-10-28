@@ -8,7 +8,21 @@ const YOUTUBE_HOME_URL = 'https://www.youtube.com/';
 const LEGACY_BLOCK_RULE_BASE_ID = 1000;
 const STATE_REVISION_KEY = 'arrow_state_revision';
 const PENDING_TRANSACTION_KEY = 'arrow_pending_transaction';
+const SESSION_ALARM = 'arrow-session-end';
+const SESSION_KEYS = ['arrow_daily_session_minutes', 'arrow_session_day', 'arrow_session_used_minutes', 'arrow_session_end_at'];
 let commitQueue = Promise.resolve();
+const localDay = (time = Date.now()) => {
+  const date = new Date(time);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+function sessionView(state, now = Date.now()) {
+  const day = localDay(now);
+  const budget = [15, 30, 45, 60].includes(state.arrow_daily_session_minutes) ? state.arrow_daily_session_minutes : 30;
+  const sameDay = state.arrow_session_day === day;
+  const used = sameDay ? Math.min(budget, Math.max(0, Number(state.arrow_session_used_minutes) || 0)) : 0;
+  const endAt = sameDay && Number(state.arrow_session_end_at) > now ? Number(state.arrow_session_end_at) : 0;
+  return { day, budget, used, remaining: Math.max(0, budget - used), endAt };
+}
 
 function enqueueCommit(work) {
   const next = commitQueue.then(work, work);
@@ -46,8 +60,15 @@ async function recoverPendingTransaction() {
 
 async function commitPatch(patch) {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new Error('Invalid settings change.');
+  if ('arrow_daily_session_minutes' in patch && ![15, 30, 45, 60].includes(patch.arrow_daily_session_minutes)) throw new Error('Invalid daily allowance.');
   return enqueueCommit(async () => {
-    const current = await chrome.storage.local.get(null);
+    const result = await commitCurrent(await chrome.storage.local.get(null), patch);
+    await syncSessionProjection(result.state);
+    return result;
+  });
+}
+
+async function commitCurrent(current, patch) {
     const prepared = prepareStatePatch(current, patch);
     const revision = (Number.isInteger(current[STATE_REVISION_KEY]) ? current[STATE_REVISION_KEY] : 0) + 1;
     const transaction = {
@@ -60,6 +81,37 @@ async function commitPatch(patch) {
     await chrome.storage.local.set({ ...prepared, [STATE_REVISION_KEY]: revision });
     await chrome.storage.local.remove(PENDING_TRANSACTION_KEY);
     return { revision, state: { ...current, ...prepared, [STATE_REVISION_KEY]: revision } };
+}
+
+async function syncSessionProjection(state) {
+  const view = sessionView(state);
+  await chrome.alarms.clear(SESSION_ALARM);
+  if (view.endAt) await chrome.alarms.create(SESSION_ALARM, { when: view.endAt });
+  const paused = !!view.endAt || !state.ArrowOn;
+  await Promise.all([
+    setRedirectRules('home', !paused && !!state.redirect_home),
+    setRedirectRules('shorts', !paused && !!state.hide_shorts,
+      state.redirect_home ? SUBSCRIPTIONS_URL : YOUTUBE_HOME_URL)
+  ]);
+}
+
+function mutateSession(kind, minutes) {
+  return enqueueCommit(async () => {
+    const current = await chrome.storage.local.get(null);
+    const view = sessionView(current);
+    let patch;
+    if (kind === 'start') {
+      if (![5, 10, 15].includes(minutes) || view.endAt || minutes > view.remaining) throw new Error('Session unavailable.');
+      patch = { arrow_session_day: view.day, arrow_session_used_minutes: view.used + minutes,
+        arrow_session_duration_minutes: minutes,
+        arrow_session_end_at: Date.now() + minutes * 60000 };
+    } else {
+      if (!view.endAt) throw new Error('No active session.');
+      patch = { arrow_session_end_at: 0 };
+    }
+    const result = await commitCurrent(current, patch);
+    await syncSessionProjection(result.state);
+    return sessionView(result.state);
   });
 }
 
@@ -157,8 +209,14 @@ function showNotification(message) {
 }
 
 function initializeAndReconcile() {
-  return initializeSettings().then(removeLegacyBlockRules);
+  return initializeSettings().then(removeLegacyBlockRules).then(async () => {
+    await syncSessionProjection(await chrome.storage.local.get(null));
+  });
 }
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === SESSION_ALARM) enqueueCommit(async () => syncSessionProjection(await chrome.storage.local.get(null))).catch(console.error);
+});
 
 chrome.runtime.onStartup.addListener(() => initializeAndReconcile().catch(console.error));
 chrome.runtime.onInstalled.addListener(() => initializeAndReconcile().catch(console.error));
@@ -171,16 +229,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     );
     return true;
   }
+  if (message?.type === 'arrow:session-start' || message?.type === 'arrow:session-skip') {
+    mutateSession(message.type === 'arrow:session-start' ? 'start' : 'skip', message.minutes).then(
+      (session) => sendResponse({ success: true, session }),
+      (error) => sendResponse({ success: false, error: error.message })
+    );
+    return true;
+  }
   if (message?.type === 'toggleRedirects') {
-    setRedirectRules('home', !!message.enabled).then(() => sendResponse({ success: true }));
+    chrome.storage.local.get(null).then(syncSessionProjection).then(() => sendResponse({ success: true }));
     return true;
   }
   if (message?.type === 'toggleShorts') {
-    setRedirectRules(
-      'shorts',
-      !!message.enabled,
-      message.redirectToSubscriptions ? SUBSCRIPTIONS_URL : YOUTUBE_HOME_URL
-    ).then(() => sendResponse({ success: true }));
+    chrome.storage.local.get(null).then(syncSessionProjection).then(() => sendResponse({ success: true }));
     return true;
   }
   if (message?.type === 'showNotification') {
