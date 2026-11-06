@@ -14,10 +14,20 @@ test("action popup uses a stable intrinsic size, not its own viewport", () => {
   const body = css.match(/body\s*\{([\s\S]*?)\n\}/)?.[1];
 
   assert.ok(body, "popup stylesheet must define body dimensions");
-  assert.match(body, /height:\s*560px\s*;/);
-  assert.match(body, /width:\s*380px\s*;/);
+  assert.match(body, /height:\s*600px\s*;/);
+  assert.match(body, /width:\s*420px\s*;/);
   assert.doesNotMatch(body, /(?:width|height)\s*:\s*[^;]*(?:\bvw\b|\bvh\b)/i,
     "the action popup must not derive intrinsic dimensions from its own viewport");
+});
+
+test("later popup styles keep a definite body width during initial sizing", () => {
+  const css = read("css/visual-system.css");
+  const popupBodyRules = [...css.matchAll(/body:has\(#popup\)\s*\{([^}]*)\}/g)];
+
+  assert.equal(popupBodyRules.length, 1,
+    "popup body width must not change inside viewport media queries");
+  assert.match(popupBodyRules[0][1], /width:\s*420px\s*;/);
+  assert.doesNotMatch(popupBodyRules[0][1], /width:\s*[^;]*(?:%|vw|vh)/i);
 });
 
 test("popup loads shared dependencies before the popup controller", () => {
@@ -35,6 +45,48 @@ test("manifest declares the expected action popup", () => {
   const manifest = JSON.parse(read("manifest.json"));
   assert.equal(manifest.manifest_version, 3);
   assert.equal(manifest.action?.default_popup, "popup.html");
+});
+
+test("popup reserves its footer and protects daily allowance increases", () => {
+  const css = read("css/popup.css");
+  const visualSystem = read("css/visual-system.css");
+  const popup = read("js/popup.js");
+
+  assert.match(css, /\.popup-footer\s*\{[\s\S]*?min-height:\s*64px\s*;/);
+  assert.doesNotMatch(visualSystem, /\.popup-footer\[hidden\]/,
+    "the footer must remain rendered when it has no pending actions");
+  assert.doesNotMatch(popup, /footer\.hidden\s*=/,
+    "idle state must not hide the footer");
+  assert.match(popup, /requestedBudget\s*>\s*initialDailySessionMinutes/);
+  assert.match(popup, /pendingDailySessionMinutes\s*>\s*initialDailySessionMinutes/);
+});
+
+test("off-state Home provides an animated durable activation path", () => {
+  const html = read("popup.html");
+  const popup = read("js/popup.js");
+  const css = read("css/visual-system.css");
+
+  assert.match(html, /id="arrow-off-home"/);
+  assert.match(html, /id="turn-on-arrow-btn"/);
+  assert.match(popup, /ArrowState\.commit\(\{ ArrowOn: true \}\)/);
+  assert.match(popup, /data-closing/);
+  assert.match(popup, /data-entering/);
+  assert.match(html, /class="home-body-layer"/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+});
+
+test("login clears sensitive fields after successful submission or dismissal", () => {
+  const login = read("js/login.js");
+
+  assert.match(login, /function clearPasswordFields\(\)/);
+  assert.match(login, /clearPasswordFields\(\);/);
+});
+
+test("password verification awaits its commit without chaining from callback storage access", () => {
+  const login = read("js/login.js");
+
+  assert.doesNotMatch(login, /ArrowState\.commit\(toSet\)\.then/);
+  assert.match(login, /await ArrowState\.commit\(toSet\)/);
 });
 
 test("website blocking is absent from extension surfaces and APIs", () => {
@@ -72,6 +124,26 @@ test("persisted mode remains authoritative and validates its settings", () => {
     highFocusSettings,
     undefined
   ), "high-focus");
+});
+
+test("an off cycle restores the canonical mode and settings that preceded it", () => {
+  const context = { globalThis: {} };
+  vm.runInNewContext(read("js/core/config.js"), context);
+  const { MODE_KEYS, readOffResumeState } = context.globalThis.ArrowConfig;
+  const minimalSettings = {
+    ArrowOn: true,
+    redirect_home: false,
+    hide_shorts: true,
+    minimal_homepage: true,
+    hide_sidebar_recommendations: true,
+    hide_comments: false
+  };
+
+  const resume = readOffResumeState({
+    [MODE_KEYS.resume]: { mode: "minimal", settings: minimalSettings }
+  });
+  assert.equal(resume.mode, "minimal");
+  assert.deepEqual({ ...resume.settings }, minimalSettings);
 });
 
 test("comment visibility defaults are mode-specific", () => {

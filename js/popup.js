@@ -18,6 +18,73 @@ let sessionState = {};
 let sessionTick;
 let pendingSessionMinutes = 0;
 let sessionTrigger = null;
+let initialDailySessionMinutes = 30;
+let pendingDailySessionMinutes = null;
+let isTurningArrowOn = false;
+
+function setHomePowerState(enabled) {
+  if (isTurningArrowOn && enabled) return;
+  const offHome = document.getElementById('arrow-off-home');
+  const life = document.getElementById('session-life');
+  if (!offHome || !life) return;
+  offHome.removeAttribute('data-closing');
+  life.removeAttribute('data-entering');
+  offHome.hidden = enabled;
+  life.hidden = !enabled;
+}
+
+function showHomeLifeWithEntry(life) {
+  life.hidden = false;
+  life.setAttribute('data-entering', '');
+  requestAnimationFrame(() => requestAnimationFrame(() => life.removeAttribute('data-entering')));
+}
+
+function waitForHomeExit(element) {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      element.removeEventListener('transitionend', onTransitionEnd);
+      resolve();
+    };
+    const onTransitionEnd = (event) => {
+      if (event.target === element && event.propertyName === 'opacity') finish();
+    };
+    element.addEventListener('transitionend', onTransitionEnd);
+    window.setTimeout(finish, 620);
+  });
+}
+
+async function turnArrowOn() {
+  if (isTurningArrowOn) return;
+  const offHome = document.getElementById('arrow-off-home');
+  const life = document.getElementById('session-life');
+  const button = document.getElementById('turn-on-arrow-btn');
+  if (!offHome || !life || !button) return;
+
+  isTurningArrowOn = true;
+  button.disabled = true;
+  showHomeLifeWithEntry(life);
+  offHome.setAttribute('data-closing', '');
+  try {
+    await Promise.all([ArrowState.commit({ ArrowOn: true }), waitForHomeExit(offHome)]);
+    arrowOn = true;
+    offHome.hidden = true;
+    offHome.removeAttribute('data-closing');
+    await loadSettings();
+  } catch (error) {
+    life.removeAttribute('data-entering');
+    life.hidden = true;
+    offHome.removeAttribute('data-closing');
+    offHome.hidden = false;
+    document.getElementById('session-error').textContent = error.message;
+    document.getElementById('session-error').hidden = false;
+  } finally {
+    isTurningArrowOn = false;
+    button.disabled = false;
+  }
+}
 function closeSessionConfirm() {
   document.getElementById('session-confirm-overlay').hidden = true;
   pendingSessionMinutes = 0;
@@ -73,7 +140,9 @@ function renderSession() {
 }
 async function refreshSession() {
   sessionState = await chrome.storage.local.get(['arrow_daily_session_minutes', 'arrow_session_day', 'arrow_session_used_minutes', 'arrow_session_end_at', 'arrow_session_duration_minutes']);
-  document.getElementById('session-budget').value = String(sessionState.arrow_daily_session_minutes || 30);
+  const savedBudget = sessionState.arrow_daily_session_minutes || 30;
+  if (pendingDailySessionMinutes === null) initialDailySessionMinutes = savedBudget;
+  document.getElementById('session-budget').value = String(pendingDailySessionMinutes ?? savedBudget);
   renderSession();
 }
 
@@ -88,7 +157,6 @@ function setPending(pending) {
   const save = document.getElementById("save-settings-btn");
   const cancel = document.getElementById("cancel-changes-btn");
   footer?.classList.toggle("has-pending", pending);
-  if (footer) footer.hidden = !pending;
   if (save) { save.disabled = !pending; save.classList.toggle("is-hidden", !pending); }
   if (cancel) cancel.disabled = !pending;
 }
@@ -106,6 +174,8 @@ function updateHomeMode(settings) {
 
 async function refreshHomeMode() {
   const settings = await chrome.storage.local.get(["ArrowOn", ...Object.values(SETTINGS), MODE_KEYS.mode]);
+  arrowOn = !!settings.ArrowOn;
+  setHomePowerState(arrowOn);
   return updateHomeMode(settings);
 }
 
@@ -152,17 +222,20 @@ async function loadSettings() {
     initialValues[id] = value;
   });
   initialMode = updateHomeMode(result);
+  setHomePowerState(arrowOn);
   const selectedModeControl = document.querySelector(`input[name="settings-mode"][value="${initialMode}"]`);
   if (selectedModeControl) selectedModeControl.checked = true;
   document.getElementById("edit-custom-btn").hidden = initialMode !== "custom";
   markActiveMode(initialMode);
+  pendingDailySessionMinutes = null;
   setPending(false);
 }
 
 function stageChange() {
   const selected = document.querySelector('input[name="settings-mode"]:checked')?.value || "custom";
   const valuesChanged = Object.keys(SETTINGS).some((id) => document.getElementById(id)?.checked !== initialValues[id]);
-  setPending(selected !== initialMode || valuesChanged);
+  const dailyBudgetChanged = pendingDailySessionMinutes !== null && pendingDailySessionMinutes !== initialDailySessionMinutes;
+  setPending(selected !== initialMode || valuesChanged || dailyBudgetChanged);
 }
 
 function applyPreset(mode) {
@@ -179,12 +252,13 @@ async function saveSettings() {
   if (!hasPendingSettings) return;
   const selected = document.querySelector('input[name="settings-mode"]:checked')?.value || "custom";
   const values = currentSettings();
-  const isProtected = selected === "custom" || initialMode === "custom" || selected === "off";
+  const dailyBudgetPatch = pendingDailySessionMinutes === null ? {} : { arrow_daily_session_minutes: pendingDailySessionMinutes };
+  const isProtected = selected === "custom" || initialMode === "custom" || selected === "off" || pendingDailySessionMinutes > initialDailySessionMinutes;
   const featurePatch = selected === "custom" ? values : { ...MODE_PRESETS[selected] };
-  const patch = { ...featurePatch, ...createModeMetadata(selected, { ...values, ...featurePatch }) };
+  const patch = { ...featurePatch, ...dailyBudgetPatch, ...createModeMetadata(selected, { ...values, ...featurePatch }) };
 
   if (isProtected) {
-    await chrome.storage.local.set({ arrow_pending_settings: featurePatch, arrow_pending_mode: selected });
+    await chrome.storage.local.set({ arrow_pending_settings: { ...featurePatch, ...dailyBudgetPatch }, arrow_pending_mode: selected });
     sessionStorage.setItem("arrow_prev_page", `popup.html#settings:${activeSettingsView}`);
     document.getElementById("login-overlay").hidden = false;
     return;
@@ -192,6 +266,7 @@ async function saveSettings() {
 
   await ArrowState.commit(patch);
   await loadSettings();
+  await refreshSession();
   showTab("home");
   chrome.runtime.sendMessage({ type: "showNotification", message: "Changes saved successfully!" });
 }
@@ -207,12 +282,28 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("open-preferences-btn")?.addEventListener("click", () => showTab("preferences"));
+  document.getElementById('turn-on-arrow-btn')?.addEventListener('click', turnArrowOn);
   document.getElementById("back-from-preferences-btn")?.addEventListener("click", () => showTab("home"));
   document.getElementById("home-mode-row")?.addEventListener("click", () => showTab("settings"));
   document.getElementById("back-from-settings-btn")?.addEventListener("click", () => showTab("preferences"));
   document.getElementById('session-budget').addEventListener('change', async (event) => {
-    try { await ArrowState.commit({ arrow_daily_session_minutes: Number(event.target.value) }); await refreshSession(); }
-    catch (error) { document.getElementById('session-error').textContent = error.message; document.getElementById('session-error').hidden = false; }
+    const requestedBudget = Number(event.target.value);
+    if (requestedBudget > initialDailySessionMinutes) {
+      pendingDailySessionMinutes = requestedBudget;
+      stageChange();
+      return;
+    }
+
+    pendingDailySessionMinutes = null;
+    try {
+      await ArrowState.commit({ arrow_daily_session_minutes: requestedBudget });
+      await refreshSession();
+      stageChange();
+    } catch (error) {
+      document.getElementById('session-error').textContent = error.message;
+      document.getElementById('session-error').hidden = false;
+      await refreshSession();
+    }
   });
   document.querySelectorAll('[data-session-minutes]').forEach(button => button.addEventListener('click', () => {
     pendingSessionMinutes = Number(button.dataset.sessionMinutes);
@@ -275,7 +366,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     markActiveMode("custom");
     stageChange();
   }));
-  document.getElementById("cancel-changes-btn")?.addEventListener("click", loadSettings);
+  document.getElementById("cancel-changes-btn")?.addEventListener("click", async () => {
+    await loadSettings();
+    await refreshSession();
+  });
   document.getElementById("save-settings-btn")?.addEventListener("click", saveSettings);
 
   window.ArrowLoginHost = {

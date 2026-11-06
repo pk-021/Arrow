@@ -33,6 +33,10 @@ the storage commit recoverable across worker suspension or browser shutdown.
 - `arrow_mode` is written with each mode-affecting commit and is the canonical
   UI read. A reader derives a mode from booleans only when that metadata is
   missing or invalid, preventing equivalent presets from being relabelled.
+- Switching from an enabled mode to Off preserves the preceding canonical mode
+  and its settings snapshot in `arrow_mode_before_off`. Turning Arrow back on
+  restores that saved state in the same worker-owned commit, so an Off cycle
+  cannot silently relabel Minimal, High Focus, or Custom as another mode.
 - Missing defaults are added without replacing saved values. Startup removes
   retired website-blocking storage values and generated dynamic rules. Other
   dynamic redirect rules remain a derived projection of durable storage.

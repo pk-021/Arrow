@@ -21,6 +21,10 @@ When subscription redirect is enabled, it redirects the YouTube home route and
 intercepts the YouTube logo to open Subscriptions. When Shorts hiding is
 enabled, it asks the service worker to redirect any desktop YouTube URL with a
 `shorts` path segment (including channel Shorts URLs) to the YouTube homepage.
+The service worker also handles top-frame YouTube history-state navigation to
+these routes, since YouTube can open Shorts without a new main-frame request.
+It reads the current saved settings and session state before redirecting, and
+uses Subscriptions as the destination when subscription redirect is enabled.
 
 ## YouTube redirect rules
 
@@ -30,7 +34,8 @@ route to Subscriptions. Shorts hiding has an independent redirect rule: any
 `/@channel/shorts`, redirects to `https://www.youtube.com/`. This rule is
 enabled only while `hide_shorts` is true. If subscription redirect is also
 enabled, the Shorts rule redirects to Subscriptions instead; subscription
-redirect takes precedence over the homepage destination.
+redirect takes precedence over the homepage destination. The same route and
+destination rules apply to in-page history navigation.
 
 ## CSS contract
 
@@ -50,9 +55,11 @@ When `hide_comments="true"`, the stylesheet hides the watch-page comments
 surface using `ytd-comments#comments`. The rule is scoped to that setting and
 does not hide comment controls when the setting is off.
 
-When `hide_sidebar_recommendations="true"`, the stylesheet also hides
-`div#related` inside any element with `id="secondary-timer"` on desktop YouTube watch pages.
-This target must not hide other children of that section or apply when the
-setting is false.
+When `hide_sidebar_recommendations="true"` on desktop YouTube watch pages,
+the stylesheet uses the `is_playlist` page flag. On playlist watches, it hides
+direct children of `#secondary-inner` except
+`ytd-playlist-panel-renderer#playlist`. On non-playlist watches, it hides
+`#secondary.ytd-watch-flexy`. Neither rule applies when the setting is false.
+Keep the newer `#secondary-inner div#related` rule commented out for reference.
 
 

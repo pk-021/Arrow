@@ -1,191 +1,147 @@
-/* Overlay Notification Styles */
+﻿/* Scoped: this stylesheet runs inside arbitrary websites. */
 .arrow-notification-overlay {
+  --notice-surface: #f8f7f3;
+  --notice-header: #e5e4df;
+  --notice-text: #303236;
+  --notice-line: #d0d0cb;
+  --notice-hover: #e3e1da;
+  --notice-primary: #e2ad48;
+  --notice-primary-hover: #efbf62;
+  --notice-on-primary: #282824;
+  --notice-focus: 0 0 0 3px rgba(167, 103, 17, .36);
   position: fixed !important;
-  bottom: 20px !important;
-  right: 20px !important;
-  width: 320px !important;
-  z-index: 2147483647 !important; /* Maximum z-index */
-  pointer-events: none !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  inset: auto 16px 16px auto !important;
+  z-index: 2147483647 !important;
   display: flex !important;
-  flex-direction: column-reverse !important; /* Newest at the bottom */
-  align-items: flex-end !important; /* Align to right */
-  gap: 10px !important; /* Space between notifications */
+  flex-direction: column-reverse !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+  width: min(340px, calc(100vw - 32px)) !important;
+  pointer-events: none !important;
+  color-scheme: light !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
 }
-
-.arrow-notification {
-  background: #ffffff !important;
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+.arrow-notification-overlay[data-arrow-theme="dark"] {
+  --notice-surface: #2b2d30;
+  --notice-header: #34363a;
+  --notice-text: #e4e4df;
+  --notice-line: #484a4d;
+  --notice-hover: #383a3d;
+  --notice-primary: #e3b34f;
+  --notice-primary-hover: #f0c36b;
+  --notice-focus: 0 0 0 3px rgba(227, 179, 79, .38);
+  color-scheme: dark !important;
+}
+.arrow-notification-overlay *,
+.arrow-notification-overlay *::before,
+.arrow-notification-overlay *::after { box-sizing: border-box !important; }
+.arrow-notification-overlay .arrow-notification {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
   overflow: hidden !important;
-  transform: translateX(100%) !important;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid var(--notice-line) !important;
+  border-radius: 14px !important;
+  background: var(--notice-surface) !important;
+  color: var(--notice-text) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .18) !important;
+  transform: translateX(110%) !important;
+  transition: transform .3s ease !important;
   pointer-events: auto !important;
-  max-width: 320px !important;
 }
-
-.arrow-notification.show {
-  transform: translateX(0) !important;
-}
-
-.arrow-notification.hide {
-  transform: translateX(100%) !important;
-}
-
-.arrow-notification-header {
+.arrow-notification-overlay .arrow-notification.show { transform: translateX(0) !important; }
+.arrow-notification-overlay .arrow-notification.hide { transform: translateX(110%) !important; }
+.arrow-notification-overlay .arrow-notification-header {
   display: flex !important;
   align-items: center !important;
-  padding: 12px 16px 8px 16px !important;
-  background: #f8f8f8 !important;
-  border-bottom: 1px solid #e0e0e0 !important;
+  min-height: 56px !important;
+  padding: 8px 14px !important;
+  border-bottom: 1px solid var(--notice-line) !important;
+  background: var(--notice-header) !important;
 }
-
-.arrow-notification-logo {
+.arrow-notification-overlay .arrow-notification-logo {
+  flex: none !important;
   width: 20px !important;
   height: 20px !important;
-  margin-right: 8px !important;
-  flex-shrink: 0 !important;
+  margin-inline-end: 8px !important;
 }
-
-.arrow-notification-title {
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  color: #222222 !important;
+.arrow-notification-overlay .arrow-notification-title {
   flex: 1 !important;
   margin: 0 !important;
+  color: var(--notice-text) !important;
+  font-size: 15px !important;
+  font-weight: 750 !important;
 }
-
-.arrow-notification-close {
-  background: none !important;
-  border: none !important;
-  font-size: 18px !important;
-  color: #666666 !important;
-  cursor: pointer !important;
-  padding: 0 !important;
-  width: 20px !important;
-  height: 20px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 4px !important;
-  transition: background-color 0.2s ease !important;
-  line-height: 1 !important;
-}
-
-.arrow-notification-close:hover {
-  background-color: rgba(0, 0, 0, 0.1) !important;
-  color: #222222 !important;
-}
-
-.arrow-notification-body {
-  padding: 16px !important;
-}
-
-.arrow-notification-message {
+.arrow-notification-overlay .arrow-notification-close {
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
+  width: 40px !important;
+  height: 40px !important;
   margin: 0 !important;
-  font-size: 14px !important;
-  line-height: 1.4 !important;
-  color: #222222 !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: var(--notice-text) !important;
+  font-family: inherit !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
 }
-
-.arrow-notification-actions {
-  padding: 8px 16px 16px 16px !important;
+.arrow-notification-overlay .arrow-notification-close:hover {
+  border-color: var(--notice-line) !important;
+  background: var(--notice-hover) !important;
+}
+.arrow-notification-overlay .arrow-notification-body { padding: 16px !important; }
+.arrow-notification-overlay .arrow-notification-message {
+  margin: 0 !important;
+  color: var(--notice-text) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+.arrow-notification-overlay .arrow-notification-actions {
   display: flex !important;
   justify-content: flex-end !important;
-  gap: 8px !important;
+  padding: 0 16px 16px !important;
 }
-
-.arrow-notification-btn {
-  background-color: #ff0000 !important;
-  color: white !important;
-  border: none !important;
-  padding: 8px 16px !important;
-  border-radius: 4px !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
+.arrow-notification-overlay .arrow-notification-btn {
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--notice-primary) !important;
+  border-radius: 8px !important;
+  background: var(--notice-primary) !important;
+  color: var(--notice-on-primary) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
   cursor: pointer !important;
-  transition: background-color 0.2s ease !important;
 }
-
-.arrow-notification-btn:hover {
-  background-color: #cc0000 !important;
+.arrow-notification-overlay .arrow-notification-btn:hover {
+  border-color: var(--notice-primary-hover) !important;
+  background: var(--notice-primary-hover) !important;
 }
-
-.arrow-notification-btn:focus {
-  outline: 2px solid #ff6666 !important;
-  outline-offset: 2px !important;
+.arrow-notification-overlay .arrow-notification-close:focus-visible,
+.arrow-notification-overlay .arrow-notification-btn:focus-visible {
+  outline: none !important;
+  box-shadow: var(--notice-focus) !important;
 }
-
-/* Dark mode styles */
-@media (prefers-color-scheme: dark) {
-  .arrow-notification {
-    background: #2a2a2a !important;
-    border: 1px solid #3a3a3a !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .arrow-notification-header {
-    background: #1e1e1e !important;
-    border-bottom: 1px solid #3a3a3a !important;
-  }
-
-  .arrow-notification-title {
-    color: #e0e0e0 !important;
-  }
-
-  .arrow-notification-close {
-    color: #aaaaaa !important;
-  }
-
-  .arrow-notification-close:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: #e0e0e0 !important;
-  }
-
-  .arrow-notification-message {
-    color: #e0e0e0 !important;
-  }
-
-  .arrow-notification-logo {
-    filter: brightness(0.9) !important;
-  }
-}
-
-/* Animation for multiple notifications */
-.arrow-notification-overlay .arrow-notification:not(:first-child) {
-  margin-top: 0 !important; /* handled by gap */
-}
-
-/* Progress bar for auto-close */
-.arrow-notification-progress {
+.arrow-notification-overlay .arrow-notification-progress {
   position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  height: 3px !important;
-  background-color: #ff0000 !important;
-  transition: width 0.1s linear !important;
+  inset: auto auto 0 0 !important;
   width: 100% !important;
+  height: 3px !important;
+  background: var(--notice-primary) !important;
+  transition: width .1s linear !important;
 }
-
-.arrow-notification-progress.animate {
-  width: 0% !important;
+.arrow-notification-overlay .arrow-notification-progress.animate {
+  width: 0 !important;
   transition: width 5s linear !important;
 }
-
-/* Keep injected notifications visually aligned without leaking page styles. */
-.arrow-notification-overlay { width:min(340px,calc(100vw - 32px)) !important; right:16px !important; bottom:16px !important; gap:8px !important; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif !important; }
-.arrow-notification { max-width:100% !important; border-color:#dfe5ef !important; border-radius:14px !important; box-shadow:0 14px 36px rgba(23,32,51,.18) !important; }
-.arrow-notification-header { min-height:56px !important; padding:10px 14px !important; background:#f8fafc !important; border-color:#dfe5ef !important; }
-.arrow-notification-title { color:#172033 !important; font-size:.9375rem !important; font-weight:750 !important; }
-.arrow-notification-close { width:36px !important; height:36px !important; color:#172033 !important; border:1px solid transparent !important; border-radius:9px !important; }
-.arrow-notification-close:hover { background:rgba(37,99,235,.10) !important; border-color:#dfe5ef !important; }
-.arrow-notification-close:focus-visible,.arrow-notification-btn:focus-visible { outline:none !important; box-shadow:0 0 0 3px rgba(37,99,235,.24) !important; }
-.arrow-notification-body { padding:16px !important; }
-.arrow-notification-message { color:#172033 !important; font-size:.875rem !important; line-height:1.5 !important; }
-.arrow-notification-actions { padding:0 16px 16px !important; }
-.arrow-notification-btn { min-height:40px !important; padding:0 16px !important; border-radius:8px !important; background:#2563eb !important; font-weight:700 !important; }
-.arrow-notification-btn:hover { background:#1d4ed8 !important; }
-.arrow-notification-progress { background:#2563eb !important; }
-@media (prefers-color-scheme:dark) { .arrow-notification { background:#182235 !important; border-color:#2c3950 !important; } .arrow-notification-header { background:#202c41 !important; border-color:#2c3950 !important; } .arrow-notification-title,.arrow-notification-message { color:#f3f6fc !important; } .arrow-notification-close { color:#f3f6fc !important; } .arrow-notification-close:hover { background:#23365a !important; border-color:#2c3950 !important; } .arrow-notification-btn,.arrow-notification-progress { background:#76a7ff !important; } }
-@media (prefers-reduced-motion:reduce) { .arrow-notification,.arrow-notification-progress { transition-duration:.01ms !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .arrow-notification-overlay .arrow-notification,
+  .arrow-notification-overlay .arrow-notification-progress { transition-duration: .01ms !important; }
+}

@@ -16,7 +16,8 @@ globalThis.ArrowConfig = (() => {
     mode: 'arrow_mode',
     snapshot: 'arrow_mode_settings_snapshot',
     updatedAt: 'arrow_mode_updated_at',
-    customSettings: 'arrow_custom_settings'
+    customSettings: 'arrow_custom_settings',
+    resume: 'arrow_mode_before_off'
   });
 
   // Keep the current product behaviour: Minimal and High Focus have the same
@@ -74,6 +75,14 @@ globalThis.ArrowConfig = (() => {
     return VALID_MODES.has(mode) ? mode : fallback;
   }
 
+  function readOffResumeState(settings) {
+    const resume = settings?.[MODE_KEYS.resume];
+    if (!resume || !VALID_MODES.has(resume.mode) || resume.mode === 'off' || !resume.settings || typeof resume.settings !== 'object') {
+      return null;
+    }
+    return { mode: resume.mode, settings: snapshot(resume.settings, true) };
+  }
+
   function createModeMetadata(mode, settings) {
     return {
       [MODE_KEYS.mode]: normalizeMode(mode, 'custom'),
@@ -84,6 +93,6 @@ globalThis.ArrowConfig = (() => {
 
   return Object.freeze({
     SETTINGS_KEYS, MODE_KEYS, MODE_PRESETS, VALID_MODES,
-    snapshot, detectMode, readMode, resolveMode, normalizeMode, createModeMetadata
+    snapshot, detectMode, readMode, resolveMode, normalizeMode, readOffResumeState, createModeMetadata
   });
 })();

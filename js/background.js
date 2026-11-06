@@ -2,9 +2,10 @@
 
 importScripts('core/config.js');
 
-const { MODE_KEYS, MODE_PRESETS, SETTINGS_KEYS, snapshot, detectMode, resolveMode } = ArrowConfig;
+const { MODE_KEYS, MODE_PRESETS, SETTINGS_KEYS, snapshot, detectMode, readMode, readOffResumeState, resolveMode } = ArrowConfig;
 const SUBSCRIPTIONS_URL = 'https://www.youtube.com/feed/subscriptions';
 const YOUTUBE_HOME_URL = 'https://www.youtube.com/';
+const SHORTS_URL = /^https:\/\/www\.youtube\.com\/(?:[^/?#]+\/)*shorts(?:[/?#]|$)/;
 const LEGACY_BLOCK_RULE_BASE_ID = 1000;
 const STATE_REVISION_KEY = 'arrow_state_revision';
 const PENDING_TRANSACTION_KEY = 'arrow_pending_transaction';
@@ -35,17 +36,27 @@ function isSettingsPatch(patch) {
 }
 
 function prepareStatePatch(current, patch) {
-  const next = { ...current, ...patch };
-  if (!isSettingsPatch(patch) && !Object.prototype.hasOwnProperty.call(patch, MODE_KEYS.mode)) return patch;
+  const hasExplicitMode = Object.prototype.hasOwnProperty.call(patch, MODE_KEYS.mode);
+  const resume = readOffResumeState(current);
+  const restorePreviousMode = patch.ArrowOn === true && current.ArrowOn === false && !hasExplicitMode && resume;
+  const effectivePatch = restorePreviousMode
+    ? { ...patch, ...resume.settings, [MODE_KEYS.mode]: resume.mode }
+    : patch;
+  const next = { ...current, ...effectivePatch };
+  if (!isSettingsPatch(effectivePatch) && !Object.prototype.hasOwnProperty.call(effectivePatch, MODE_KEYS.mode)) return effectivePatch;
   const settings = snapshot(next, true);
-  const mode = resolveMode(current, settings, patch[MODE_KEYS.mode]);
-  return {
-    ...patch,
+  const mode = resolveMode(current, settings, effectivePatch[MODE_KEYS.mode]);
+  const prepared = {
+    ...effectivePatch,
     [MODE_KEYS.mode]: mode,
     [MODE_KEYS.snapshot]: settings,
     [MODE_KEYS.updatedAt]: Date.now(),
     ...(mode === 'custom' ? { [MODE_KEYS.customSettings]: settings } : {})
   };
+  if (patch.ArrowOn === false && current.ArrowOn !== false && mode === 'off') {
+    prepared[MODE_KEYS.resume] = { mode: readMode(current), settings: snapshot(current, true) };
+  }
+  return prepared;
 }
 
 async function recoverPendingTransaction() {
@@ -213,6 +224,21 @@ function initializeAndReconcile() {
     await syncSessionProjection(await chrome.storage.local.get(null));
   });
 }
+
+async function redirectHistoryShorts(details) {
+  if (details.frameId !== 0 || details.tabId < 0 || !SHORTS_URL.test(details.url)) return;
+  const state = await chrome.storage.local.get(null);
+  if (!state.ArrowOn || !state.hide_shorts || sessionView(state).endAt) return;
+  const tab = await chrome.tabs.get(details.tabId);
+  if (tab.url !== details.url) return;
+  await chrome.tabs.update(details.tabId, {
+    url: state.redirect_home ? SUBSCRIPTIONS_URL : YOUTUBE_HOME_URL
+  });
+}
+
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  redirectHistoryShorts(details).catch((error) => console.warn('[Shorts] History redirect failed:', error));
+});
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SESSION_ALARM) enqueueCommit(async () => syncSessionProjection(await chrome.storage.local.get(null))).catch(console.error);

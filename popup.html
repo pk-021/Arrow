@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
 
   <!-- Stylesheets -->
   <script src="js/theme-init.js"></script>
   <link rel="stylesheet" href="css/popup.css" />
   <link rel="stylesheet" href="css/login-overlay.css" />
+  <link rel="stylesheet" href="css/visual-system.css" />
   
   <!-- Scripts (non-module scripts can go here) -->
   <script src="js/login.js" defer></script>
@@ -26,23 +28,32 @@
           <button type="button" id="open-preferences-btn" class="header-settings-btn" aria-label="Open settings" title="Settings"><span class="ui-icon icon-settings" aria-hidden="true"></span></button>
         </div>
 
-        <div class="session-home">
-          <div id="session-hearts" class="session-hearts" aria-label="Daily time remaining"></div>
-          <p id="session-minutes" class="session-minutes" aria-live="polite"></p>
-          <div id="session-choices" class="session-choices">
-            <p>Get a pass for:</p>
-            <div class="session-buttons">
-              <button type="button" data-session-minutes="5">5 min</button>
-              <button type="button" data-session-minutes="10">10 min</button>
-              <button type="button" data-session-minutes="15">15 min</button>
+        <div class="home-body-layer">
+          <div id="arrow-off-home" class="arrow-off-home" hidden>
+            <button type="button" id="turn-on-arrow-btn" class="turn-on-arrow-btn">
+              <span class="turn-on-arrow-mark" aria-hidden="true">↗</span>
+              <span>Turn on Arrow</span>
+            </button>
+          </div>
+
+          <div id="session-life" class="session-home" hidden>
+            <div id="session-hearts" class="session-hearts" aria-label="Daily time remaining"></div>
+            <p id="session-minutes" class="session-minutes" aria-live="polite"></p>
+            <div id="session-choices" class="session-choices">
+              <p>Get a pass for:</p>
+              <div class="session-buttons">
+                <button type="button" data-session-minutes="5">5 min</button>
+                <button type="button" data-session-minutes="10">10 min</button>
+                <button type="button" data-session-minutes="15">15 min</button>
+              </div>
             </div>
+            <div id="session-active" class="session-active" hidden>
+              <div id="session-ring" class="session-ring"><span id="session-clock">00:00</span></div>
+              <button type="button" id="session-skip" class="session-skip">Skip</button>
+            </div>
+            <div id="session-empty" class="session-empty" hidden><span class="ui-icon icon-arrow-right" aria-hidden="true"></span><p>Hearts refill tomorrow</p></div>
+            <p id="session-error" class="session-error" role="alert" hidden></p>
           </div>
-          <div id="session-active" class="session-active" hidden>
-            <div id="session-ring" class="session-ring"><span id="session-clock">00:00</span></div>
-            <button type="button" id="session-skip" class="session-skip">Skip</button>
-          </div>
-          <div id="session-empty" class="session-empty" hidden><span class="ui-icon icon-arrow-right" aria-hidden="true"></span><p>Hearts refill tomorrow</p></div>
-          <p id="session-error" class="session-error" role="alert" hidden></p>
         </div>
       </section>
 

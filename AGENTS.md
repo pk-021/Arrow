@@ -14,6 +14,16 @@ For every user-requested product or behavior change:
 Do not overwrite unrelated user work. Changes to persisted data must retain
 backwards-compatible reads and use the central state-commit contract.
 
+## Browser-access boundary
+
+Do not assume an agent can access or control a local browser, including the
+user's personal Chrome profile. Live browser testing is available only when a
+browser session has been explicitly connected to the agent. Before claiming
+that a YouTube surface or extension UI was tested live, verify that a connected
+browser is available. If it is not, run applicable repository-level checks,
+state that live browser validation could not be performed, and ask the user to
+connect a dedicated test-browser profile if that validation is needed.
+
 ## Product context
 
 Arrow is a Chrome extension that helps people use YouTube intentionally by

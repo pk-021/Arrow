@@ -13,7 +13,10 @@
    `/@channel/shorts`; confirm each redirects to the YouTube homepage rather
    than Subscriptions. Enable subscription redirect too and confirm both paths
    instead redirect to Subscriptions. Disable Shorts hiding and confirm neither
-   path redirects when subscription redirect is off.
+   path redirects when subscription redirect is off. Repeat both Shorts paths
+   by navigating from an already open YouTube page without a full reload, and
+   verify the same destinations. While a pass is active or Arrow is off,
+   confirm in-page navigation to a Short is allowed.
 6. Set a password, make a protected change, verify it, and confirm the staged change is committed.
 7. Test light, dark, and system theme on popup, login, settings, and add-block pages.
 8. Send a notification and confirm native notification behavior; send an overlay notification on a normal web page and confirm close and auto-dismiss.
@@ -62,5 +65,81 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
 23. Open Custom Settings at the preferred popup size and a constrained height. Confirm no unnecessary prominent scrollbar at preferred size; at constrained height, scroll through every setting using wheel, touchpad, and keyboard. Verify the slim scrollbar sits flush with the popup right edge, its hover state works in light and dark themes, and controls retain their right inset without clipping.
 
 24. Inspect popup Home, Settings, Mode, Custom, and password views in light and dark themes. Confirm local SVG icons render sharply at normal and high display scale, align with their controls, and have accessible button names. Confirm heart fill remains accurate for all budget choices and no icon depends on a remote network request.
-25. On a desktop YouTube watch page containing `#secondary-timer div#related`, enable Hide Sidebar Recommendations and confirm only that related container is hidden within the section. Disable the setting and confirm it returns. Check other children of `#secondary-timer` remain usable.
+25. On desktop YouTube watch pages, enable Hide Sidebar Recommendations. With a
+    playlist open, confirm the `ytd-playlist-panel-renderer#playlist` remains
+    usable while other direct children of `#secondary-inner` are hidden. On a
+    watch page without a playlist, confirm `#secondary.ytd-watch-flexy` is
+    hidden. Disable the setting on both pages and confirm the sidebar returns.
+
+26. Inspect popup Home, Settings, Mode, Custom, confirmation, and password views,
+    plus the legacy settings page, in light and dark themes. At the preferred
+    popup size (420 by 600 CSS pixels) and constrained width/height, confirm a
+    consistent gray and warm yellow/orange visual language, clear daily allowance
+    and pass hierarchy, readable
+    labels, visible selected and pending states, 40px action targets, keyboard
+    focus, no horizontal overflow, and scroll access to every control. Confirm
+    existing controls and their behavior still work.
+
+27. Reload the extension and open Home as an action popup. Confirm its outer
+    width is the declared 420 CSS pixels rather than a narrow initial viewport;
+    all seven hearts fit on one row and pass buttons use the available width.
+    Repeat after opening Settings and returning Home. Run the popup shell test
+    to confirm no later stylesheet gives the popup body a percentage or
+    viewport-derived startup width.
+
+28. Open Mode and Custom in light and dark themes. Confirm the Custom back
+    button, title, rows, and scrollbar align with the other popup views, and
+    Settings and Custom row labels have the same inset from hover fill edges as
+    Mode option titles in both themes. Confirm
+    switches use the shared warm accent rather than legacy blue. With no
+    pending changes, confirm the empty footer remains visible and reserves the same space as the
+    pending action bar. Change a Custom
+    toggle or mode and confirm the pending footer appears with readable status,
+    neutral Cancel, warm Save, keyboard focus, and no horizontal clipping.
+    Cancel or Save and confirm the footer returns to its empty reserved state. Repeat in a
+    constrained-height popup and confirm all Custom rows remain scrollable.
+
+32. Set a daily pause allowance, then choose a higher allowance. Confirm the value becomes a
+    pending change, the footer actions appear without shifting the content area, and Save opens the
+    password verification flow. Confirm Cancel preserves the stored allowance. Enter the correct
+    password after Save and confirm the increased allowance is committed and shown on Home.
+
+33. Turn Arrow off and open Home. Confirm the header and reserved footer remain while the
+    daily-life body is replaced by a large `Turn on Arrow` button. Activate it and confirm the
+    button exits while the daily-life body enters smoothly without a flicker, `ArrowOn` is durably
+    true after reopening the popup, and reduced-motion preference removes the movement without
+    preventing activation. Repeat from Minimal, High Focus, and Custom: after turning Arrow back
+    on, Home and the selected Mode radio must show the exact mode and settings from before Off.
+
+34. Complete password setup and successful password verification in both the standalone login page
+    and popup overlay. Confirm the submitted password and confirmation fields clear immediately;
+    cancel or dismiss the overlay and confirm every password field is empty when it is next shown.
+
+35. Save a password-protected change with the correct password. Confirm the staged change commits,
+    the overlay closes only after success, and the popup console contains no uncaught promise error.
+    Simulate a commit failure and confirm the overlay stays open with its inline error shown.
+
+29. On Home in light and dark themes, confirm each pass-button arrow is
+    off-white rather than yellow, remains legible on its button, and retains
+    the local SVG shape. Confirm the remaining-time line sits slightly lower
+    below the hearts while staying visually connected to them. Check full,
+    partial, and empty allowance states without changing heart fill behavior.
+
+30. On Home at preferred and constrained popup widths in both themes, confirm
+    the seven-heart group and remaining-time line are centered horizontally
+    in the popup (and each wrapped heart row centers when space is constrained).
+    Confirm "Get a pass for:"
+    begins on the same visual left axis as the text inside the pass buttons,
+    approximately 21px in from their outer border, while buttons retain full
+    usable width and remain keyboard accessible.
+
+31. Audit every extension-owned surface in light, dark, and system theme:
+    popup Home, Settings, Mode, Custom, pending footer, confirmation and password
+    overlay; standalone settings; standalone password setup, verification,
+    reset challenge and error states; standalone notification; and the injected
+    notification overlay on light and dark host pages. Confirm neutral surfaces,
+    warm primary controls, consistent text, borders, hover and focus states,
+    40px action targets, no legacy blue or red primary buttons, and no horizontal
+    clipping at constrained widths. Confirm reset and notification interactions
+    still work, and the injected overlay follows Arrow's theme preference.
 

@@ -23,8 +23,8 @@ body {
   /* Action popups are initially sized from document intrinsic dimensions.
      Do not derive these values from the popup viewport: that creates a
      circular calculation and can collapse the popup to a tiny box. */
-  height: 560px;
-  width: 380px;
+  height: 600px;
+  width: 420px;
   overflow: hidden;
   transition: background-color 0.35s ease, color 0.35s ease;
 }
@@ -43,8 +43,8 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  min-height: 20px;
-  padding: 2px 14px;
+  min-height: 64px;
+  padding: 12px 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: var(--bg);
   box-sizing: border-box;
@@ -53,11 +53,6 @@ body {
 
 html[dark_mode="true"] .popup-footer {
   border-top-color: rgba(255, 255, 255, 0.08);
-}
-
-.popup-footer.has-pending {
-  min-height: 50px;
-  padding: 10px 14px;
 }
 
 .popup-footer-status {

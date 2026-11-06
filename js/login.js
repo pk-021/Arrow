@@ -124,6 +124,12 @@ const normalizeMode = ArrowConfig.normalizeMode;
 const detectModeFromSettings = ArrowConfig.detectMode;
 const pickSettingsSnapshot = ArrowConfig.snapshot;
 
+function clearPasswordFields() {
+  input.value = "";
+  newPasswordInput.value = "";
+  confirmPasswordInput.value = "";
+}
+
 function safeRuntimeSendMessage(payload) {
   try {
     if (!chrome?.runtime?.id) return;
@@ -139,6 +145,7 @@ function safeRuntimeSendMessage(payload) {
 
 // --- Helper to show/hide containers ---
 function showContainer(container) {
+  clearPasswordFields();
   [loginContainer, setupContainer, resetContainer].forEach((c) =>
     c.classList.add("hidden")
   );
@@ -146,6 +153,7 @@ function showContainer(container) {
 }
 
 function goBackToPreviousPage() {
+  clearPasswordFields();
   if (window.ArrowLoginHost && typeof window.ArrowLoginHost.close === 'function') {
     window.ArrowLoginHost.close();
     return;
@@ -237,6 +245,7 @@ saveButton.addEventListener("click", async () => {
   }
 
   await chrome.storage.local.set({ extensionPassword: newPass });
+  clearPasswordFields();
   showNotification("Password set successfully! Please log in.", loginContainer);
   setupError.classList.add("hidden");
 });
@@ -264,8 +273,9 @@ async function checkPassword() {
   const password = await getPassword();
 
   if (enteredPass === password) {
+    clearPasswordFields();
     // Apply pending settings after successful login.
-    chrome.storage.local.get(['arrow_pending_settings', 'arrow_pending_mode'], (data) => {
+    chrome.storage.local.get(['arrow_pending_settings', 'arrow_pending_mode'], async (data) => {
       const pendingSettings = data.arrow_pending_settings || null;
       const pendingMode = data.arrow_pending_mode || null;
 
@@ -290,27 +300,21 @@ async function checkPassword() {
       }
 
       if (hadChanges) {
-              ArrowState.commit(toSet).then(() => {
-          const keysToRemove = ['arrow_pending_settings', 'arrow_pending_mode'];
-                chrome.storage.local.remove(keysToRemove, () => {
-                  // Notify success (safe)
-                  safeRuntimeSendMessage({
-                    type: 'showNotification',
-                    message: 'Changes applied successfully!',
-                    notificationType: 'success'
-                  });
-
-                      // Close the embedded overlay or return to the page that opened login
-                      setTimeout(() => {
-                        if (!notifyParent('success')) {
-                          goBackToPreviousPage();
-                        }
-                      }, 500);
-          }).catch((commitError) => {
-            console.error('Failed to apply protected changes:', commitError);
-            showInlineError(error, 'Unable to save changes. Please try again.');
+        try {
+          await ArrowState.commit(toSet);
+          await chrome.storage.local.remove(['arrow_pending_settings', 'arrow_pending_mode']);
+          safeRuntimeSendMessage({
+            type: 'showNotification',
+            message: 'Changes applied successfully!',
+            notificationType: 'success'
           });
-        });
+          if (!notifyParent('success')) {
+            goBackToPreviousPage();
+          }
+        } catch (commitError) {
+          console.error('Failed to apply protected changes:', commitError);
+          showInlineError(error, 'Unable to save changes. Please try again.');
+        }
       } else {
         // No pending changes – still return to the page that opened login
                   if (!notifyParent('success')) {

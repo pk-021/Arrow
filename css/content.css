@@ -58,9 +58,20 @@ html[redirect_home="true"] .yt-simple-endpoint[title="Home"] {
 }
 
 
+/* Sidebar recommendations */
+html[hide_sidebar_recommendations="true"][is_playlist="true"] #secondary-inner > *:not(ytd-playlist-panel-renderer#playlist) {
+    display: none !important;
+}
+
+html[hide_sidebar_recommendations="true"][is_playlist="false"] #secondary.ytd-watch-flexy {
+    display: none !important;
+}
+
+/*
 html[hide_sidebar_recommendations="true"] #secondary-inner div#related {
     display: none !important;
 }
+*/
 
 /* Watch-page comments */
 html[hide_comments="true"] ytd-comments#comments {

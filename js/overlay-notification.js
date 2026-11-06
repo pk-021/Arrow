@@ -5,11 +5,30 @@ class ArrowNotificationOverlay {
     this.notifications = new Map();
     this.nextId = 0;
     this.container = this.createContainer();
+    this.themeSetting = 'system';
+    this.systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+    this.applyTheme();
+    this.systemTheme.addEventListener('change', () => this.applyTheme());
+    chrome.storage.local.get('themeSetting', (result) => {
+      this.themeSetting = result?.themeSetting || 'system';
+      this.applyTheme();
+    });
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'local' || !changes.themeSetting) return;
+      this.themeSetting = changes.themeSetting.newValue || 'system';
+      this.applyTheme();
+    });
     chrome.runtime.onMessage.addListener((message, _sender, respond) => {
       if (message?.type !== 'showOverlayNotification') return false;
       respond({ success: true, notificationId: this.show(message.message, message.notificationType) });
       return false;
     });
+  }
+
+  applyTheme() {
+    const dark = this.themeSetting === 'dark' ||
+      (this.themeSetting === 'system' && this.systemTheme.matches);
+    this.container.dataset.arrowTheme = dark ? 'dark' : 'light';
   }
 
   createContainer() {
