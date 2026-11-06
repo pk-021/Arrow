@@ -1,8 +1,8 @@
 ﻿# Agent status
 
-**Status:** High Focus preset expansion complete; live Chrome validation pending.
+**Status:** Live-chat page-state attribute rename complete; live Chrome validation pending.
 
-**Doing:** High Focus enables every available feature setting.
+**Doing:** The content script exposes the live-chat page state as `has_chat`.
 
 **Next:** Validate High Focus, homepage, sidebar, playlist, and chat states in a dedicated Chrome test profile when one is connected.
 

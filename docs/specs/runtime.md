@@ -17,7 +17,7 @@ resumes. When the extension
 is off, it applies the off feature set. It writes relevant setting values and
 page-state flags (`is_home`, `has_playlist`) to the document root for CSS. It
 updates the logo behavior and page flags across YouTube SPA navigation events.
-It writes `chat_exists` on the document root: it is `"true"` only when a
+It writes `has_chat` on the document root: it is `"true"` only when a
 `ytd-live-chat-frame` exists without either `hide-chat-frame` or `collapsed`.
 It is `"false"` when the frame is absent or has either attribute, and it
 updates when YouTube inserts, removes, hides, or collapses that frame.

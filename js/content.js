@@ -180,7 +180,7 @@ function updateChatExists() {
     const chatExists = !!chatFrame &&
         !chatFrame.hasAttribute("hide-chat-frame") &&
         !chatFrame.hasAttribute("collapsed");
-    document.documentElement.setAttribute("chat_exists", String(chatExists));
+    document.documentElement.setAttribute("has_chat", String(chatExists));
 }
 
 let chatExistsUpdateQueued = false;

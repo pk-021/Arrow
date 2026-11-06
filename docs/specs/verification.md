@@ -90,10 +90,10 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     behavior.
 
 25b. On a desktop YouTube live watch page, confirm the document root has
-    `chat_exists="true"` while `ytd-live-chat-frame` has neither
+    `has_chat="true"` while `ytd-live-chat-frame` has neither
     `hide-chat-frame` nor `collapsed`. Add either attribute and confirm
-    `chat_exists="false"`; remove it and confirm the value returns to `"true"`.
-    Confirm a page without a live-chat frame reports `chat_exists="false"`.
+    `has_chat="false"`; remove it and confirm the value returns to `"true"`.
+    Confirm a page without a live-chat frame reports `has_chat="false"`.
 
 26. Inspect popup Home, Settings, Mode, Custom, confirmation, and password views,
     plus the legacy settings page, in light and dark themes. At the preferred

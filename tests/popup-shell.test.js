@@ -199,7 +199,8 @@ test("content script exposes live chat availability as a root attribute", () => 
   assert.match(content, /document\.querySelector\("ytd-live-chat-frame"\)/);
   assert.match(content, /!chatFrame\.hasAttribute\("hide-chat-frame"\)/);
   assert.match(content, /!chatFrame\.hasAttribute\("collapsed"\)/);
-  assert.match(content, /setAttribute\("chat_exists", String\(chatExists\)\)/);
+  assert.match(content, /setAttribute\("has_chat", String\(chatExists\)\)/);
+  assert.doesNotMatch(content, /setAttribute\("chat_exists"/);
   assert.match(content, /attributeFilter: \["hide-chat-frame", "collapsed"\]/);
 });
 
