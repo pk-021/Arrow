@@ -81,6 +81,15 @@
             </select>
           </div>
 
+          <section class="sync-status" aria-labelledby="sync-status-title">
+            <div class="sync-status-copy">
+              <div id="sync-status-title" class="home-title">Sync</div>
+              <p id="sync-status-message" class="home-subtitle" aria-live="polite" aria-atomic="true">Checking Chrome sync…</p>
+              <p id="sync-status-error" class="sync-status-error" role="alert" hidden></p>
+            </div>
+            <button type="button" id="connect-google-btn" class="sync-connect-btn" hidden>Connect Google account</button>
+          </section>
+
           <button type="button" id="home-mode-row" class="home-row home-row-button">
             <div class="home-copy">
               <div class="home-title">Mode</div>

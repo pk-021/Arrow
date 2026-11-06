@@ -18,6 +18,23 @@ Provides legacy direct toggles for extension enabled, subscription redirect,
 and Shorts visibility. Every change updates mode metadata and sends a browser
 notification. It does not expose website blocking.
 
+## Identity and sync status
+
+Popup Settings includes a compact, dedicated Sync status area. It initially
+states whether Chrome sync is available and, when Chrome provides profile
+metadata, displays `Synced as <email>`. The identity email is read using
+`chrome.identity.getProfileUserInfo()` and is not stored by Arrow. A `Connect
+Google account` control is available only when no OAuth token has been granted;
+its explicit click invokes `chrome.identity.getAuthToken({ interactive: true })`
+and communicates cancellation, missing OAuth configuration, or authorization
+failure inline. Arrow never starts an interactive identity flow merely because
+the popup opened.
+
+The Sync status uses a polite live region for ordinary state changes and an
+assertive live region for a failed preference write. It refreshes immediately
+when `chrome.storage.onChanged` reports `areaName === 'sync'`, allowing remote
+preference updates to appear without a popup reload.
+
 ## Login page/overlay
 
 Prompts for an existing password or initial password setup. Successful

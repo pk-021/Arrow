@@ -1,85 +1,90 @@
 {
-  "manifest_version": 3,
-  "name": "Arrow",
-  "description": "This extension makes YouTube more productive",
-  "version": "0.1",
-  "permissions": [
-    "declarativeNetRequestWithHostAccess",
-    "activeTab",
-    "webNavigation",
-    "storage",
-    "alarms",
-    "tabs",
-    "history",
-    "webRequest",
-    "declarativeNetRequest",
-    "notifications",
-    "scripting"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "arrow_rules",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
-  },
-  "background": { "service_worker": "js/background.js" },
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "assets/play.png",
-        "assets/delete.png",
-        "assets/save.png",
-        "assets/ytlogo.png",
-        "assets/logo_v2.png"
-      ],
-      "matches": [
-        "https://*.youtube.com/*",
-        "<all_urls>"
-      ]
-    }
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "https://www.youtube.com/*"
-      ],
-      "js": [
-        "js/core/config.js",
-        "js/core/state.js",
-        "js/content.js"
-      ],
-      "css": [
-        "css/content.css"
-      ]
-    },
-    {
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "js": [
-        "js/overlay-notification.js"
-      ],
-      "css": [
-        "css/overlay-notification.css"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
-  },
-  "icons": {
-    "128": "assets/logo_v2.png"
-  }
+    "manifest_version":  3,
+    "name":  "Arrow",
+    "description":  "This extension makes YouTube more productive",
+    "version":  "0.1",
+    "permissions":  [
+                        "declarativeNetRequestWithHostAccess",
+                        "activeTab",
+                        "webNavigation",
+                        "storage",
+                        "alarms",
+                        "tabs",
+                        "history",
+                        "webRequest",
+                        "declarativeNetRequest",
+                        "notifications",
+                        "scripting",
+                        "identity",
+                        "identity.email"
+                    ],
+    "host_permissions":  [
+                             "\u003call_urls\u003e"
+                         ],
+    "declarative_net_request":  {
+                                    "rule_resources":  [
+                                                           {
+                                                               "id":  "arrow_rules",
+                                                               "enabled":  true,
+                                                               "path":  "rules.json"
+                                                           }
+                                                       ]
+                                },
+    "background":  {
+                       "service_worker":  "js/background.js"
+                   },
+    "action":  {
+                   "default_popup":  "popup.html"
+               },
+    "web_accessible_resources":  [
+                                     {
+                                         "resources":  [
+                                                           "assets/play.png",
+                                                           "assets/delete.png",
+                                                           "assets/save.png",
+                                                           "assets/ytlogo.png",
+                                                           "assets/logo_v2.png"
+                                                       ],
+                                         "matches":  [
+                                                         "https://*.youtube.com/*",
+                                                         "\u003call_urls\u003e"
+                                                     ]
+                                     }
+                                 ],
+    "content_scripts":  [
+                            {
+                                "matches":  [
+                                                "https://www.youtube.com/*"
+                                            ],
+                                "js":  [
+                                           "js/core/config.js",
+                                           "js/core/state.js",
+                                           "js/content.js"
+                                       ],
+                                "css":  [
+                                            "css/content.css"
+                                        ]
+                            },
+                            {
+                                "matches":  [
+                                                "http://*/*",
+                                                "https://*/*"
+                                            ],
+                                "js":  [
+                                           "js/overlay-notification.js"
+                                       ],
+                                "css":  [
+                                            "css/overlay-notification.css"
+                                        ],
+                                "run_at":  "document_idle",
+                                "all_frames":  false
+                            }
+                        ],
+    "content_security_policy":  {
+                                    "extension_pages":  "script-src \u0027self\u0027; object-src \u0027self\u0027"
+                                },
+    "icons":  {
+                  "128":  "assets/logo_v2.png"
+              },
+    "key":  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvt4t5LasOxGzBhUudYuV4vWssWvDAcSq7daEMDUwjn1aLpy/qLy0Z/Fhj46551JyQgsm4dQsggsrLI/DRXrX9ZP6RzNRrI6yDVMSelt+/oPKS+2C72PDmodKAv4geDSL9hYh3oOIj+djNe8Y7EvRxj6J49MBzVxviVLwbAr7vOctmcYjHwUkBEjA0kmbYmd/mTFRzH4Q1h+d6/Taanb5fHRSYv7QbNpzz9xoBg2Ht8nyFlRQXJ70+aCw13HOph9udynKRlHtDmxqCIU4SsYk9yCOnM0k1SJw1QMrF9Ter6ffh+MAayzTbtBpZVZswLX1fZO9BzVEfIkjLhk8UeiaFwIDAQAB"
 }

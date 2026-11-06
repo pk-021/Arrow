@@ -11,6 +11,20 @@ const STATE_REVISION_KEY = 'arrow_state_revision';
 const PENDING_TRANSACTION_KEY = 'arrow_pending_transaction';
 const SESSION_ALARM = 'arrow-session-end';
 const SESSION_KEYS = ['arrow_daily_session_minutes', 'arrow_session_day', 'arrow_session_used_minutes', 'arrow_session_end_at'];
+const SYNC_PREFERENCES_KEY = 'arrow_sync_preferences';
+const SYNC_STATUS_ERROR_KEY = 'arrow_sync_status_error';
+const SYNC_SCHEMA_VERSION = 1;
+const SYNC_MAX_ITEM_BYTES = 8 * 1024;
+const SYNC_MAX_TOTAL_BYTES = 100 * 1024;
+const SYNC_PREFERENCE_KEYS = Object.freeze([
+  ...SETTINGS_KEYS,
+  'arrow_daily_session_minutes',
+  'themeSetting',
+  MODE_KEYS.mode,
+  MODE_KEYS.snapshot,
+  MODE_KEYS.customSettings,
+  MODE_KEYS.resume
+]);
 let commitQueue = Promise.resolve();
 const localDay = (time = Date.now()) => {
   const date = new Date(time);
@@ -33,6 +47,85 @@ function enqueueCommit(work) {
 
 function isSettingsPatch(patch) {
   return SETTINGS_KEYS.some((key) => Object.prototype.hasOwnProperty.call(patch, key));
+}
+
+function syncStorageCall(method, ...args) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync[method](...args, (result) => {
+      const error = chrome.runtime.lastError;
+      if (error) return reject(new Error(error.message));
+      resolve(result);
+    });
+  });
+}
+
+async function setSyncStatusError(message = '') {
+  try {
+    if (message) await chrome.storage.session.set({ [SYNC_STATUS_ERROR_KEY]: message });
+    else await chrome.storage.session.remove(SYNC_STATUS_ERROR_KEY);
+  } catch (error) {
+    console.warn('[Sync] Could not update sync status:', error);
+  }
+}
+
+function makeSyncPreferences(state) {
+  const preferences = {};
+  for (const key of SYNC_PREFERENCE_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(state, key)) preferences[key] = state[key];
+  }
+  return { version: SYNC_SCHEMA_VERSION, updatedAt: Date.now(), preferences };
+}
+
+function syncEnvelopeBytes(envelope) {
+  return new TextEncoder().encode(JSON.stringify({ [SYNC_PREFERENCES_KEY]: envelope })).byteLength;
+}
+
+function validSyncPreferences(envelope) {
+  if (!envelope || envelope.version !== SYNC_SCHEMA_VERSION || !envelope.preferences || typeof envelope.preferences !== 'object') return null;
+  const patch = {};
+  for (const key of SETTINGS_KEYS) {
+    if (typeof envelope.preferences[key] === 'boolean') patch[key] = envelope.preferences[key];
+  }
+  if ([15, 30, 45, 60].includes(envelope.preferences.arrow_daily_session_minutes)) {
+    patch.arrow_daily_session_minutes = envelope.preferences.arrow_daily_session_minutes;
+  }
+  if (['light', 'dark', 'system'].includes(envelope.preferences.themeSetting)) patch.themeSetting = envelope.preferences.themeSetting;
+  if (ArrowConfig.VALID_MODES.has(envelope.preferences[MODE_KEYS.mode])) patch[MODE_KEYS.mode] = envelope.preferences[MODE_KEYS.mode];
+  if (envelope.preferences[MODE_KEYS.snapshot] && typeof envelope.preferences[MODE_KEYS.snapshot] === 'object') {
+    patch[MODE_KEYS.snapshot] = snapshot(envelope.preferences[MODE_KEYS.snapshot], true);
+  }
+  if (envelope.preferences[MODE_KEYS.customSettings] && typeof envelope.preferences[MODE_KEYS.customSettings] === 'object') {
+    patch[MODE_KEYS.customSettings] = snapshot(envelope.preferences[MODE_KEYS.customSettings], true);
+  }
+  const resume = envelope.preferences[MODE_KEYS.resume];
+  if (resume && ArrowConfig.VALID_MODES.has(resume.mode) && resume.mode !== 'off' && resume.settings && typeof resume.settings === 'object') {
+    patch[MODE_KEYS.resume] = { mode: resume.mode, settings: snapshot(resume.settings, true) };
+  }
+  return Object.keys(patch).length ? patch : null;
+}
+
+async function mirrorPreferencesToSync(state) {
+  const envelope = makeSyncPreferences(state);
+  const itemBytes = syncEnvelopeBytes(envelope);
+  if (itemBytes >= SYNC_MAX_ITEM_BYTES) throw new Error('Sync preference item exceeds Chrome’s 8 KB limit.');
+  const [totalBytes, oldItemBytes] = await Promise.all([
+    syncStorageCall('getBytesInUse', null),
+    syncStorageCall('getBytesInUse', SYNC_PREFERENCES_KEY)
+  ]);
+  if (totalBytes - oldItemBytes + itemBytes >= SYNC_MAX_TOTAL_BYTES) {
+    throw new Error('Chrome sync storage is full (100 KB limit).');
+  }
+  await syncStorageCall('set', { [SYNC_PREFERENCES_KEY]: envelope });
+  await setSyncStatusError();
+}
+
+async function applyRemoteSyncPreferences(envelope) {
+  const patch = validSyncPreferences(envelope);
+  if (!patch) return;
+  const current = await chrome.storage.local.get(SYNC_PREFERENCE_KEYS);
+  const localPreferences = makeSyncPreferences(current).preferences;
+  if (JSON.stringify(localPreferences) === JSON.stringify(envelope.preferences)) return;
+  await commitPatch(patch, { mirrorToSync: false });
 }
 
 function prepareStatePatch(current, patch) {
@@ -69,12 +162,20 @@ async function recoverPendingTransaction() {
   await chrome.storage.local.remove(PENDING_TRANSACTION_KEY);
 }
 
-async function commitPatch(patch) {
+async function commitPatch(patch, { mirrorToSync = true } = {}) {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new Error('Invalid settings change.');
   if ('arrow_daily_session_minutes' in patch && ![15, 30, 45, 60].includes(patch.arrow_daily_session_minutes)) throw new Error('Invalid daily allowance.');
   return enqueueCommit(async () => {
     const result = await commitCurrent(await chrome.storage.local.get(null), patch);
     await syncSessionProjection(result.state);
+    if (mirrorToSync && SYNC_PREFERENCE_KEYS.some((key) => Object.prototype.hasOwnProperty.call(result.state, key))) {
+      try {
+        await mirrorPreferencesToSync(result.state);
+      } catch (error) {
+        await setSyncStatusError(error.message);
+        console.warn('[Sync] Preference sync failed:', error);
+      }
+    }
     return result;
   });
 }
@@ -220,9 +321,18 @@ function showNotification(message) {
 }
 
 function initializeAndReconcile() {
-  return initializeSettings().then(removeLegacyBlockRules).then(async () => {
+  return (async () => {
+    await initializeSettings();
+    await removeLegacyBlockRules();
+    let synced = {};
+    try {
+      synced = await syncStorageCall('get', SYNC_PREFERENCES_KEY);
+    } catch (error) {
+      await setSyncStatusError(error.message);
+    }
+    await applyRemoteSyncPreferences(synced[SYNC_PREFERENCES_KEY]);
     await syncSessionProjection(await chrome.storage.local.get(null));
-  });
+  })();
 }
 
 async function redirectHistoryShorts(details) {
@@ -247,6 +357,17 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.runtime.onStartup.addListener(() => initializeAndReconcile().catch(console.error));
 chrome.runtime.onInstalled.addListener(() => initializeAndReconcile().catch(console.error));
 initializeAndReconcile().catch((error) => console.warn('[Startup] Settings initialization failed:', error));
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'sync' || !changes[SYNC_PREFERENCES_KEY]?.newValue) return;
+  (async () => {
+    try {
+      await applyRemoteSyncPreferences(changes[SYNC_PREFERENCES_KEY].newValue);
+    } catch (error) {
+      await setSyncStatusError(error.message);
+      console.warn('[Sync] Remote preference update failed:', error);
+    }
+  })();
+});
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'arrow:commit') {
     commitPatch(message.patch).then(
@@ -275,6 +396,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       (notificationId) => sendResponse({ success: true, notificationId }),
       (error) => sendResponse({ success: false, error: error.message })
     );
+    return true;
+  }
+  if (message?.type === 'arrow:sync-status') {
+    (async () => {
+      try {
+        const [usedBytes, status] = await Promise.all([
+          syncStorageCall('getBytesInUse', null),
+          chrome.storage.session.get(SYNC_STATUS_ERROR_KEY)
+        ]);
+        sendResponse({ success: true, usedBytes, error: status[SYNC_STATUS_ERROR_KEY] || '' });
+      } catch (error) {
+        sendResponse({ success: false, error: error.message });
+      }
+    })();
     return true;
   }
   return false;

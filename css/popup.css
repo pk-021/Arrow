@@ -1590,4 +1590,12 @@ html[dark_mode="true"] .theme-selector, html[dark_mode="true"] .theme-selector:h
 .session-confirm-actions button { min-height: 40px; padding: 0 14px; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
 .session-confirm-actions button:focus-visible { outline: none; box-shadow: var(--focus); }
 .session-confirm-actions button:disabled { opacity: .55; cursor: wait; }
+.sync-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.sync-status-copy { min-width: 0; }
+.sync-status-message { margin: 3px 0 0; }
+.sync-status-error { margin: 5px 0 0; color: var(--danger); font-size: .78rem; line-height: 1.35; }
+.sync-connect-btn { flex: 0 0 auto; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.sync-connect-btn:hover:not(:disabled) { background: var(--hover); border-color: var(--primary); }
+.sync-connect-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sync-connect-btn:disabled { cursor: wait; opacity: .65; }
 

@@ -24,6 +24,40 @@ the storage commit recoverable across worker suspension or browser shutdown.
 `sessionStorage` are never authoritative. A surface refreshes from storage on
 `storage.onChanged`, so passive or power-saved tabs converge when they resume.
 
+## Synced preferences
+
+Arrow keeps product state and recovery journals in `chrome.storage.local`, but
+also mirrors the small, non-sensitive preference subset to `chrome.storage.sync`
+under the single `arrow_sync_preferences` key. The envelope contains the schema
+version, an update timestamp, and only display/behavior preferences: Arrow mode
+metadata, feature toggles, daily allowance, and theme. It never contains a
+password, authentication token, pending transaction, state revision, or an
+active-session record.
+
+Before a sync write the worker serializes the entire envelope and rejects it if
+it is at least 8 KB or would bring sync-area use to 100 KB. A failed sync write
+does not roll back the acknowledged local commit: it is reported as a sync
+status error and the local setting remains usable. Callback-based sync writes
+read `chrome.runtime.lastError` before reporting success. At startup, and on a
+`storage.onChanged` event whose area is `sync`, the worker validates a remote
+envelope and applies its preference patch through the same serialized local
+commit path. Local-to-sync mirroring is suppressed for that remote application
+to prevent a feedback loop.
+
+The sync status is a derived, non-authoritative UI value. It reports whether
+Chrome sync is available, the profile email when Chrome provides it, and the
+latest local error. It is not persisted as account data.
+
+## Extension identity and package targets
+
+Arrow’s initial Store-draft ZIP removes the local development key and optional
+OAuth configuration so the Chrome Web Store can assign an Item ID and publish
+its public key. The developer replaces the local manifest key with that public
+key. Thereafter, both the unpacked-development and Store builds retain that
+fixed key and inject the same OAuth client ID created for the Store Item ID.
+This gives development and production one extension ID, one Chrome Sync
+namespace, and one OAuth client. The build never embeds a client secret.
+
 ## Consistency rules
 
 - A commit patch is all-or-nothing at the storage boundary: its data, mode

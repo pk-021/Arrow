@@ -22,6 +22,77 @@ let initialDailySessionMinutes = 30;
 let pendingDailySessionMinutes = null;
 let isTurningArrowOn = false;
 
+function getProfileUserInfo() {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getProfileUserInfo({ accountStatus: 'SYNC' }, (profile) => {
+      const error = chrome.runtime.lastError;
+      if (error) return reject(new Error(error.message));
+      resolve(profile || {});
+    });
+  });
+}
+
+function getAuthTokenInteractively() {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: true }, (token) => {
+      const error = chrome.runtime.lastError;
+      if (error) return reject(new Error(error.message));
+      resolve(typeof token === 'string' ? token : token?.token);
+    });
+  });
+}
+
+function setSyncMessage(message, error = '') {
+  const status = document.getElementById('sync-status-message');
+  const errorNode = document.getElementById('sync-status-error');
+  if (status) status.textContent = message;
+  if (errorNode) {
+    errorNode.textContent = error;
+    errorNode.hidden = !error;
+  }
+}
+
+async function refreshSyncStatus() {
+  const button = document.getElementById('connect-google-btn');
+  try {
+    const [sync, profile] = await Promise.all([ArrowState.syncStatus(), getProfileUserInfo()]);
+    const error = sync.error || '';
+    if (!navigator.onLine) {
+      setSyncMessage('Chrome is offline; preferences will sync when it reconnects.', error);
+      if (button) button.hidden = !profile.email;
+      return;
+    }
+    if (profile.email) {
+      setSyncMessage(`Synced as ${profile.email}`, error);
+      if (button) button.hidden = true;
+    } else {
+      setSyncMessage('Chrome sync is disabled or no synced profile is available.', error);
+      if (button) button.hidden = false;
+    }
+  } catch (error) {
+    setSyncMessage('Chrome sync status is unavailable.', error.message);
+    if (button) button.hidden = false;
+  }
+}
+
+async function connectGoogleAccount() {
+  const button = document.getElementById('connect-google-btn');
+  if (!button) return;
+  button.disabled = true;
+  setSyncMessage('Connecting your Google account…');
+  try {
+    await getAuthTokenInteractively();
+    await refreshSyncStatus();
+  } catch (error) {
+    const message = /oauth2|client.?id|not configured/i.test(error.message)
+      ? 'Google sign-in needs an OAuth client ID in the development or Store build.'
+      : error.message;
+    setSyncMessage('Google account was not connected.', message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function setHomePowerState(enabled) {
   if (isTurningArrowOn && enabled) return;
   const offHome = document.getElementById('arrow-off-home');
@@ -282,6 +353,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("open-preferences-btn")?.addEventListener("click", () => showTab("preferences"));
+  document.getElementById('connect-google-btn')?.addEventListener('click', connectGoogleAccount);
   document.getElementById('turn-on-arrow-btn')?.addEventListener('click', turnArrowOn);
   document.getElementById("back-from-preferences-btn")?.addEventListener("click", () => showTab("home"));
   document.getElementById("home-mode-row")?.addEventListener("click", () => showTab("settings"));
@@ -378,8 +450,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   };
   await loadSettings();
   await refreshSession();
+  await refreshSyncStatus();
   sessionTick = setInterval(renderSession, 250);
   chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync') refreshSyncStatus().catch(console.error);
     if (area !== "local") return;
     const modeKeys = ["ArrowOn", ...Object.values(SETTINGS), MODE_KEYS.mode];
     if (modeKeys.some((key) => key in changes)) refreshHomeMode().catch(console.error);

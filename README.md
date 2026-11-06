@@ -40,6 +40,17 @@ Arrow is a browser extension that enhances your YouTube experience by making it 
 ## File Structure
 
 - `manifest.json` – Extension manifest and permissions.
+
+## Identity, sync, and packaging
+
+Arrow stores durable settings locally and mirrors only non-sensitive preferences
+through Chrome Sync. Passwords, OAuth tokens, pending transactions, and active
+pause sessions never enter the sync payload.
+
+Use [the Store identity setup guide](docs/STORE_ID_SETUP.md). It gives every
+click and command needed to create the draft, copy its key, create the OAuth
+client, verify the matching IDs, and build the final ZIP without manually
+editing `manifest.json`.
 - `popup.html`, `js/popup.js`, `css/popup.css` – Popup UI and logic.
 - `settings.html`, `js/settings.js`, `css/settings.css` – Settings UI and logic.
 - `login.html`, `js/login.js`, `css/login.css` – Password lock and reset.

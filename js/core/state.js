@@ -21,6 +21,7 @@ globalThis.ArrowState = (() => {
   return Object.freeze({
     commit: (patch) => send('arrow:commit', { patch }),
     startSession: (minutes) => send('arrow:session-start', { minutes }),
-    skipSession: () => send('arrow:session-skip')
+    skipSession: () => send('arrow:session-skip'),
+    syncStatus: () => send('arrow:sync-status')
   });
 })();

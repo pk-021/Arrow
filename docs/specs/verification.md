@@ -119,6 +119,30 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     the overlay closes only after success, and the popup console contains no uncaught promise error.
     Simulate a commit failure and confirm the overlay stays open with its inline error shown.
 
+36. In a Chrome profile with sync enabled, change a preference and confirm the
+    worker writes one `arrow_sync_preferences` envelope smaller than 8 KB. Make
+    the same preference change on a second profile with the same published
+    extension ID; confirm the first popup updates through its sync-area change
+    listener without being reloaded. Confirm session state, passwords, pending
+    transactions, and tokens are absent from the envelope.
+
+37. With `identity.email` permission available, open Popup Settings and confirm
+    the Sync status names the signed-in profile email when Chrome supplies one,
+    otherwise explains that sync is unavailable. Click Connect Google account
+    and complete or cancel the OAuth prompt; confirm a successful flow updates
+    the status and a cancelled, quota, or connectivity failure appears inline
+    without losing the locally saved preference. Confirm no interactive OAuth
+    prompt occurs merely by opening the popup.
+
+38. Build the initial Chrome Web Store draft package and confirm its manifest
+    omits the local `key` and OAuth configuration. Upload it as a draft, copy
+    its public key into the source manifest, then use its Item ID to create a
+    Chrome-extension OAuth client. Build both targets with that client ID and
+    confirm both manifests retain the Store public key and OAuth client ID. Load
+    the unpacked build from a second local directory and confirm its extension
+    ID matches the Store Item ID and its sync preferences are in the same
+    namespace.
+
 29. On Home in light and dark themes, confirm each pass-button arrow is
     off-white rather than yellow, remains legible on its button, and retains
     the local SVG shape. Confirm the remaining-time line sits slightly lower
