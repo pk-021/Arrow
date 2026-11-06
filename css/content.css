@@ -6,7 +6,11 @@ html[hide_shorts="true"] ytd-mini-guide-entry-renderer:has(> a[aria-label="Short
 html[hide_shorts="true"] yt-tab-shape[tab-title="Shorts"],
 
 /* Labelled Shorts filter chip */
-html[hide_shorts="true"] yt-chip-cloud-chip-renderer:has(> #chip-container > yt-formatted-string[title="Shorts"]),
+/* Target the second chip in filter bar (Shorts chip) */
+html[hide_shorts="true"] yt-chip-cloud-renderer yt-chip-cloud-chip-renderer:nth-child(2) {
+    display: none !important;
+}
+
 
 /* Home, subscriptions, search, and watch-page Shorts shelves */
 html[hide_shorts="true"] ytd-rich-section-renderer:has(> #content > ytd-rich-shelf-renderer[is-shorts]),
