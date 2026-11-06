@@ -1,9 +1,9 @@
 ﻿# Agent status
 
-**Status:** Shared unpacked/Web Store identity packaging is ready; Dashboard and live Chrome validation pending.
+**Status:** Sync privacy-information dialog complete; live Chrome validation pending.
 
-**Doing:** A no-paste, step-by-step Store identity setup guide and clipboard-based key installer are complete. The installer normalizes the Dashboard key, updates the manifest, and prints the expected extension ID for verification.
+**Doing:** The first Popup Settings Sync row opens a native privacy-information dialog covering Chrome storage, Chrome Sync, Arrow-operated servers, and local-data deletion on uninstall.
 
-**Next:** Upload `dist/arrow-web-store-draft.zip`, copy its Package-tab public key, run the documented clipboard-based `npm run set:store-key` command, create one OAuth client for the assigned Item ID, then load the matching unpacked build and perform verification cases 36–38 alongside the pre-existing live cases.
+**Next:** Return to Store identity setup and live verification cases 36–38 when a dedicated Chrome test profile is connected.
 
-**Outcome:** Node syntax and 17 tests, including the PowerShell key-installer execution test, and `git diff --check` pass. The keyless draft ZIP and final development/Store packages were inspected: final manifests retain the same public key and injected OAuth client ID. No live browser was available for Dashboard, OAuth, or cross-device Sync verification.
+**Outcome:** `node --test tests/popup-shell.test.js tests/identity-sync.test.js` passed all 18 tests and `git diff --check` passed. No live browser was available for Popup Settings, Dashboard, or cross-device Sync verification.

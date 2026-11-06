@@ -1590,12 +1590,27 @@ html[dark_mode="true"] .theme-selector, html[dark_mode="true"] .theme-selector:h
 .session-confirm-actions button { min-height: 40px; padding: 0 14px; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
 .session-confirm-actions button:focus-visible { outline: none; box-shadow: var(--focus); }
 .session-confirm-actions button:disabled { opacity: .55; cursor: wait; }
-.sync-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.sync-status { align-items: center; justify-content: space-between; gap: 12px; }
 .sync-status-copy { min-width: 0; }
 .sync-status-message { margin: 3px 0 0; }
 .sync-status-error { margin: 5px 0 0; color: var(--danger); font-size: .78rem; line-height: 1.35; }
-.sync-connect-btn { flex: 0 0 auto; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
-.sync-connect-btn:hover:not(:disabled) { background: var(--hover); border-color: var(--primary); }
-.sync-connect-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.sync-connect-btn:disabled { cursor: wait; opacity: .65; }
+
+.sync-info-dialog {
+  width: min(100% - 32px, 360px);
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, .28);
+}
+.sync-info-dialog:modal { overscroll-behavior: contain; }
+.sync-info-dialog::backdrop { overflow: hidden; background: rgba(17, 24, 39, .55); backdrop-filter: blur(2px); overscroll-behavior: contain; }
+.sync-info-content { padding: 24px; }
+.sync-info-content h2 { margin: 0 0 12px; font-size: 1.12rem; color: var(--text); }
+.sync-info-content p { margin: 0 0 12px; color: var(--muted); font-size: .875rem; line-height: 1.5; }
+.sync-info-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+.sync-info-actions button { min-height: 40px; padding: 0 16px; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+.sync-info-actions button:focus-visible { outline: none; box-shadow: var(--focus); }
 

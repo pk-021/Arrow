@@ -1,7 +1,11 @@
 # Set up Arrow’s Chrome Web Store identity
 
-Follow this once, in order. You do not need to understand public keys, OAuth,
-or Chrome extension IDs. Do not change `manifest.json` by hand.
+Follow this once, in order. You do not need to understand public keys or Chrome
+extension IDs. Do not change `manifest.json` by hand.
+
+This setup does one thing: it makes Arrow’s unpacked development build and its
+Chrome Web Store item use the same extension ID. That lets Chrome Sync treat
+them as the same extension, so the same preferences can sync between them.
 
 ## Before you start
 
@@ -71,38 +75,12 @@ You need:
    here and do not publish; copy the Dashboard public key again and rerun the
    command.
 
-## Part 3 — Create the one Google OAuth client
+## Part 3 — Build and test locally
 
-This is needed only for Arrow’s explicit **Connect Google account** button.
-Chrome Sync itself works from the user’s normal Chrome sign-in.
-
-1. Keep the Store draft’s **Item ID** available.
-
-2. Open [Google Cloud Console credentials](https://console.cloud.google.com/apis/credentials).
-
-3. Create a project if Google asks you to choose one.
-
-4. Click **Create credentials**, then **OAuth client ID**.
-
-5. Choose application type **Chrome Extension**.
-
-6. Give it a clear name, such as `Arrow Chrome Extension`.
-
-7. Paste the Store draft’s **Item ID** into the **Application ID** or
-   **Extension ID** field.
-
-8. Click **Create**.
-
-9. Copy the generated client ID. It ends in
-   `.apps.googleusercontent.com`. This is safe to put in a build command; it
-   is not a client secret.
-
-## Part 4 — Build and test locally
-
-1. In PowerShell, replace the placeholder and run:
+1. In PowerShell, run:
 
    ```powershell
-   npm run build:dev -- -OAuthClientId 'PASTE_THE_CLIENT_ID_HERE'
+   npm run build:dev
    ```
 
 2. In Chrome, open `chrome://extensions`.
@@ -120,16 +98,15 @@ Chrome Sync itself works from the user’s normal Chrome sign-in.
 6. Find Arrow’s **ID** on the extension card. It must match both the Dashboard
    Item ID and the ID printed in Part 2.
 
-7. Open Arrow, go to Settings, then test **Connect Google account**. Complete
-   the Google prompt. The Sync area should show the signed-in email when Chrome
-   makes it available.
+7. Open Arrow and go to Settings. The Sync area should show the signed-in email
+   when Chrome makes it available. No extra Google-account setup is required.
 
-## Part 5 — Build the final Store ZIP
+## Part 4 — Build the final Store ZIP
 
 After the local test works, run:
 
 ```powershell
-npm run build:web-store -- -OAuthClientId 'PASTE_THE_SAME_CLIENT_ID_HERE'
+npm run build:web-store
 ```
 
 Upload this file to the existing Store draft:
@@ -147,6 +124,4 @@ from `CHROMEWEBSTORE.md` before submitting it for review.
 |---|---|
 | `No valid public key was found` | Go back to the Store draft, click **View public key**, copy the key again, then rerun `npm run set:store-key`. |
 | The printed ID and Dashboard Item ID differ | Do not publish. Copy the public key from that exact Dashboard draft, rerun the setup command, then rebuild. |
-| Google Cloud rejects the ID | Use the Store draft’s Item ID, not an ID from an old unpacked Arrow installation. |
-| Arrow says Google sign-in needs OAuth configuration | Rebuild `dist/development` using Part 4’s command, then remove and reload that unpacked directory in Chrome. |
 | You moved the project folder | Rebuild `dist/development`; the Store public key keeps the ID stable. |

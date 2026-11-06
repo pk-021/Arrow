@@ -126,22 +126,24 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     listener without being reloaded. Confirm session state, passwords, pending
     transactions, and tokens are absent from the envelope.
 
-37. With `identity.email` permission available, open Popup Settings and confirm
-    the Sync status names the signed-in profile email when Chrome supplies one,
-    otherwise explains that sync is unavailable. Click Connect Google account
-    and complete or cancel the OAuth prompt; confirm a successful flow updates
-    the status and a cancelled, quota, or connectivity failure appears inline
-    without losing the locally saved preference. Confirm no interactive OAuth
-    prompt occurs merely by opening the popup.
+37. With `identity` and `identity.email` permissions available, open Popup Settings and confirm
+    Sync is the first Settings row, has the same hover fill and bordered
+    separation as the other rows, and selecting it opens an information dialog.
+    Confirm the dialog accurately states Arrow's Chrome storage and Sync use,
+    its lack of Arrow-operated server transmission, and local-data deletion on
+    uninstall. Confirm the Sync status names the signed-in profile email when Chrome supplies one,
+    otherwise explains that sync is unavailable. Confirm no Google authorization
+    prompt, OAuth client configuration, token request, or stored token exists;
+    a quota or connectivity failure must appear inline without losing the
+    locally saved preference.
 
 38. Build the initial Chrome Web Store draft package and confirm its manifest
-    omits the local `key` and OAuth configuration. Upload it as a draft, copy
-    its public key into the source manifest, then use its Item ID to create a
-    Chrome-extension OAuth client. Build both targets with that client ID and
-    confirm both manifests retain the Store public key and OAuth client ID. Load
-    the unpacked build from a second local directory and confirm its extension
-    ID matches the Store Item ID and its sync preferences are in the same
-    namespace.
+    omits the local `key` and all OAuth configuration. Upload it as a draft and
+    copy its public key into the source manifest. Build both targets and confirm
+    both manifests retain the Store public key but omit OAuth configuration.
+    Load the unpacked build from a second local directory and confirm its
+    extension ID matches the Store Item ID and its sync preferences are in the
+    same namespace.
 
 29. On Home in light and dark themes, confirm each pass-button arrow is
     off-white rather than yellow, remains legible on its button, and retains

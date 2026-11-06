@@ -50,13 +50,12 @@ latest local error. It is not persisted as account data.
 
 ## Extension identity and package targets
 
-Arrow’s initial Store-draft ZIP removes the local development key and optional
-OAuth configuration so the Chrome Web Store can assign an Item ID and publish
-its public key. The developer replaces the local manifest key with that public
-key. Thereafter, both the unpacked-development and Store builds retain that
-fixed key and inject the same OAuth client ID created for the Store Item ID.
-This gives development and production one extension ID, one Chrome Sync
-namespace, and one OAuth client. The build never embeds a client secret.
+Arrow’s initial Store-draft ZIP removes the local development key so the Chrome
+Web Store can assign an Item ID and publish its public key. The developer
+replaces the local manifest key with that public key. Thereafter, both the
+unpacked-development and Store builds retain that fixed key, giving development
+and production one extension ID and one Chrome Sync namespace. Arrow has no
+OAuth client, scopes, token requests, or client secret.
 
 ## Consistency rules
 

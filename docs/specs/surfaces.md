@@ -20,15 +20,21 @@ notification. It does not expose website blocking.
 
 ## Identity and sync status
 
-Popup Settings includes a compact, dedicated Sync status area. It initially
+Popup Settings places a compact, dedicated Sync status area first, above the
+daily pause, theme, and mode rows. Selecting the Sync row opens a short,
+formally worded information dialog. The dialog states that Arrow stores its
+settings and session data in Chrome storage, that eligible preferences use
+Chrome Sync when available, that Arrow does not send data to Arrow-operated
+servers, and that uninstalling Arrow removes its local data. It also clarifies
+that Chrome-managed synced preferences may be restored on reinstall. The row
+uses the same hover fill and bordered separation as the other Settings rows.
+It initially
 states whether Chrome sync is available and, when Chrome provides profile
 metadata, displays `Synced as <email>`. The identity email is read using
-`chrome.identity.getProfileUserInfo()` and is not stored by Arrow. A `Connect
-Google account` control is available only when no OAuth token has been granted;
-its explicit click invokes `chrome.identity.getAuthToken({ interactive: true })`
-and communicates cancellation, missing OAuth configuration, or authorization
-failure inline. Arrow never starts an interactive identity flow merely because
-the popup opened.
+`chrome.identity.getProfileUserInfo()` and is not stored by Arrow. Arrow never
+calls `chrome.identity.getAuthToken()`, opens a Google authorization prompt, or
+includes OAuth configuration; native Chrome Sync and Chrome-profile metadata
+are sufficient for this product.
 
 The Sync status uses a polite live region for ordinary state changes and an
 assertive live region for a failed preference write. It refreshes immediately

@@ -63,6 +63,13 @@
           <h2>Settings</h2>
         </div></div>
         <div class="home-list" aria-label="Settings controls">
+          <button type="button" id="sync-status-row" class="home-row home-row-button sync-status" aria-haspopup="dialog" aria-describedby="sync-status-message">
+            <div class="sync-status-copy">
+              <div id="sync-status-title" class="home-title">Sync</div>
+              <p id="sync-status-message" class="home-subtitle" aria-live="polite" aria-atomic="true">Checking Chrome sync…</p>
+              <p id="sync-status-error" class="sync-status-error" role="alert" hidden></p>
+            </div>
+          </button>
           <div class="home-row home-row-theme">
             <div class="home-copy"><div class="home-title">Daily pause time</div><div class="home-subtitle">Refills each day</div></div>
             <select id="session-budget" class="theme-selector" aria-label="Daily pause time">
@@ -80,15 +87,6 @@
               <option value="dark">Night</option>
             </select>
           </div>
-
-          <section class="sync-status" aria-labelledby="sync-status-title">
-            <div class="sync-status-copy">
-              <div id="sync-status-title" class="home-title">Sync</div>
-              <p id="sync-status-message" class="home-subtitle" aria-live="polite" aria-atomic="true">Checking Chrome sync…</p>
-              <p id="sync-status-error" class="sync-status-error" role="alert" hidden></p>
-            </div>
-            <button type="button" id="connect-google-btn" class="sync-connect-btn" hidden>Connect Google account</button>
-          </section>
 
           <button type="button" id="home-mode-row" class="home-row home-row-button">
             <div class="home-copy">
@@ -230,6 +228,18 @@
     <!-- Test notification button (hidden by default, uncomment for testing) -->
     <!-- <button id="test-notification" style="margin: 10px; padding: 8px 16px; background: #ff0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Test Notification</button> -->
   </div>
+
+  <dialog id="sync-info-dialog" class="sync-info-dialog" aria-labelledby="sync-info-title" closedby="any">
+    <div class="sync-info-content">
+      <h2 id="sync-info-title">About Arrow data</h2>
+      <p>Arrow stores its settings and session information in Chrome storage.</p>
+      <p>Eligible preferences sync through Chrome when Sync is available. Arrow does not send data to Arrow-operated servers and does not use a separate Arrow account.</p>
+      <p>Uninstalling Arrow removes its local data. Chrome-managed synced preferences may be restored if Chrome retains them and Arrow is reinstalled.</p>
+      <form method="dialog" class="sync-info-actions">
+        <button type="submit" class="btn-primary" autofocus>Close</button>
+      </form>
+    </div>
+  </dialog>
 
   <div id="session-confirm-overlay" class="overlay session-confirm-overlay" hidden>
     <div class="session-confirm-card" role="dialog" aria-modal="true" aria-labelledby="session-confirm-title" aria-describedby="session-confirm-description">

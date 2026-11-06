@@ -1,7 +1,6 @@
 param(
   [ValidateSet('development', 'web-store', 'web-store-draft')]
   [string]$Target = 'development',
-  [string]$OAuthClientId,
   [string]$OutputDirectory = 'dist'
 )
 
@@ -25,12 +24,6 @@ foreach ($file in @('login.html', 'notification.html', 'popup.html', 'rules.json
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ($Target -eq 'web-store-draft') {
   $manifest.PSObject.Properties.Remove('key')
-}
-if ($Target -ne 'web-store-draft' -and -not [string]::IsNullOrWhiteSpace($OAuthClientId)) {
-  $manifest | Add-Member -NotePropertyName oauth2 -NotePropertyValue ([ordered]@{
-    client_id = $OAuthClientId
-    scopes = @('https://www.googleapis.com/auth/userinfo.email')
-  }) -Force
 }
 $manifestJson = $manifest | ConvertTo-Json -Depth 20
 [System.IO.File]::WriteAllText((Join-Path $destination 'manifest.json'), $manifestJson, (New-Object System.Text.UTF8Encoding($false)))

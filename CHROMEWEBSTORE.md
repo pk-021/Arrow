@@ -56,7 +56,7 @@ Show the Arrow popup alongside a desktop YouTube page with Shorts and recommenda
 | `declarativeNetRequest` | permissions | Maintains Arrow’s YouTube redirect rules selected by the user. |
 | `notifications` | permissions | Shows confirmation when a user changes an Arrow setting. |
 | `scripting` | permissions | Existing manifest permission; remove before submission unless a user-invoked scripting feature is added. |
-| `identity` | permissions | Lets a user explicitly connect their Google account for Chrome identity status. |
+| `identity` | permissions | Enables Arrow to read Chrome-profile metadata for the Sync status area. |
 | `identity.email` | permissions | Shows the signed-in Chrome email address in Arrow’s Sync status area. |
 | `<all_urls>` | host_permissions | Existing overlay notification script; narrow this permission before submission if notification support can be limited to a smaller set of sites. |
 
@@ -69,7 +69,7 @@ Show the Arrow popup alongside a desktop YouTube page with Shorts and recommenda
 | Data Type | Collected? | Transmitted Off-Device? | Purpose | Shared with Third Parties? |
 |---|---|---|---|---|
 | Personally identifiable info | No | No | The profile email is displayed but not stored by Arrow. | No |
-| Authentication info | No | No | OAuth tokens remain managed by Chrome and are not stored by Arrow. | No |
+| Authentication info | No | No | Arrow does not request, receive, or store OAuth tokens. | No |
 | User activity | Yes | Chrome Sync only | Retains selected focus preferences and daily-pause settings. | No |
 | Web history | No | No | Arrow does not read or store browsing history. | No |
 | Website content | No | No | Arrow does not collect page content. | No |
@@ -106,7 +106,7 @@ Show the Arrow popup alongside a desktop YouTube page with Shorts and recommenda
 ### Known Issues / Limitations
 
 Upload `dist/arrow-web-store-draft.zip` as an unpublished draft first. Copy the
-Package-tab public key into the source manifest, then create one Chrome
-Extension OAuth client for the assigned Item ID and use that client ID for both
-development and Store packages. Before submission, remove any unused
-permissions listed above and narrow host access where feasible.
+Package-tab public key into the source manifest so unpacked development and the
+Store item share one extension ID and Chrome Sync namespace. Arrow has no OAuth
+client or token flow. Before submission, remove any unused permissions listed
+above and narrow host access where feasible.
