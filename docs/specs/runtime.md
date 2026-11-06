@@ -17,6 +17,10 @@ resumes. When the extension
 is off, it applies the off feature set. It writes relevant setting values and
 page-state flags (`is_home`, `is_playlist`) to the document root for CSS. It
 updates the logo behavior and page flags across YouTube SPA navigation events.
+It writes `chat_exists` on the document root: it is `"true"` only when a
+`ytd-live-chat-frame` exists without either `hide-chat-frame` or `collapsed`.
+It is `"false"` when the frame is absent or has either attribute, and it
+updates when YouTube inserts, removes, hides, or collapses that frame.
 When subscription redirect is enabled, it redirects the YouTube home route and
 intercepts the YouTube logo to open Subscriptions. When Shorts hiding is
 enabled, it asks the service worker to redirect any desktop YouTube URL with a
@@ -61,5 +65,9 @@ direct children of `#secondary-inner` except
 `ytd-playlist-panel-renderer#playlist`. On non-playlist watches, it hides
 `#secondary.ytd-watch-flexy`. Neither rule applies when the setting is false.
 Keep the newer `#secondary-inner div#related` rule commented out for reference.
+
+The four granular sidebar preference values, rather than the master setting,
+are written as document-root attributes. No selectors consume them until a
+later, explicitly specified CSS change.
 
 

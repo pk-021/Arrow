@@ -9,7 +9,19 @@ globalThis.ArrowConfig = (() => {
     'hide_shorts',
     'minimal_homepage',
     'hide_sidebar_recommendations',
+    'hide_sidebar_recommended',
+    'hide_sidebar_live_chat',
+    'hide_sidebar_playlist',
+    'hide_sidebar_fundraiser',
     'hide_comments'
+  ]);
+
+  const SIDEBAR_SETTING_KEY = 'hide_sidebar_recommendations';
+  const SIDEBAR_CHILD_KEYS = Object.freeze([
+    'hide_sidebar_recommended',
+    'hide_sidebar_live_chat',
+    'hide_sidebar_playlist',
+    'hide_sidebar_fundraiser'
   ]);
 
   const MODE_KEYS = Object.freeze({
@@ -26,16 +38,22 @@ globalThis.ArrowConfig = (() => {
     off: Object.freeze({
       ArrowOn: false, redirect_home: false, hide_shorts: false,
       minimal_homepage: false, hide_sidebar_recommendations: false,
+      hide_sidebar_recommended: false, hide_sidebar_live_chat: false,
+      hide_sidebar_playlist: false, hide_sidebar_fundraiser: false,
       hide_comments: false
     }),
     minimal: Object.freeze({
       ArrowOn: true, redirect_home: false, hide_shorts: true,
       minimal_homepage: true, hide_sidebar_recommendations: true,
+      hide_sidebar_recommended: true, hide_sidebar_live_chat: true,
+      hide_sidebar_playlist: true, hide_sidebar_fundraiser: true,
       hide_comments: false
     }),
     'high-focus': Object.freeze({
       ArrowOn: true, redirect_home: false, hide_shorts: true,
       minimal_homepage: true, hide_sidebar_recommendations: true,
+      hide_sidebar_recommended: true, hide_sidebar_live_chat: true,
+      hide_sidebar_playlist: true, hide_sidebar_fundraiser: true,
       hide_comments: true
     })
   });
@@ -92,7 +110,7 @@ globalThis.ArrowConfig = (() => {
   }
 
   return Object.freeze({
-    SETTINGS_KEYS, MODE_KEYS, MODE_PRESETS, VALID_MODES,
+    SETTINGS_KEYS, SIDEBAR_SETTING_KEY, SIDEBAR_CHILD_KEYS, MODE_KEYS, MODE_PRESETS, VALID_MODES,
     snapshot, detectMode, readMode, resolveMode, normalizeMode, readOffResumeState, createModeMetadata
   });
 })();

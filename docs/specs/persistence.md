@@ -73,6 +73,14 @@ OAuth client, scopes, token requests, or client secret.
 - Missing defaults are added without replacing saved values. Startup removes
   retired website-blocking storage values and generated dynamic rules. Other
   dynamic redirect rules remain a derived projection of durable storage.
+- `hide_sidebar_recommendations` remains the backwards-compatible master
+  setting. The nested sidebar preferences are persisted as
+  `hide_sidebar_recommended`, `hide_sidebar_live_chat`,
+  `hide_sidebar_playlist`, and `hide_sidebar_fundraiser`. During migration,
+  a missing child inherits the saved master value. A master toggle and its
+  resulting child values are committed together; a child toggle and its derived
+  master value are committed together. The initial child preferences are
+  data-only and do not alter the existing CSS projection.
 
 ## Lifecycle behavior
 

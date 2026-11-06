@@ -1,9 +1,9 @@
 ﻿# Agent status
 
-**Status:** Sync privacy-information dialog complete; live Chrome validation pending.
+**Status:** Live-chat page-state attribute implementation complete; live Chrome validation pending.
 
-**Doing:** The first Popup Settings Sync row opens a native privacy-information dialog covering Chrome storage, Chrome Sync, Arrow-operated servers, and local-data deletion on uninstall.
+**Doing:** The content script maintains `chat_exists` from the live-chat frame visibility state.
 
-**Next:** Return to Store identity setup and live verification cases 36–38 when a dedicated Chrome test profile is connected.
+**Next:** Validate the chat state in a dedicated Chrome test profile when one is connected.
 
-**Outcome:** `node --test tests/popup-shell.test.js tests/identity-sync.test.js` passed all 18 tests and `git diff --check` passed. No live browser was available for Popup Settings, Dashboard, or cross-device Sync verification.
+**Outcome:** `node --test tests/popup-shell.test.js tests/identity-sync.test.js` passed all 20 tests; JavaScript syntax checks and `git diff --check` passed. No live browser is currently connected for popup or YouTube validation.

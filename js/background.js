@@ -2,7 +2,7 @@
 
 importScripts('core/config.js');
 
-const { MODE_KEYS, MODE_PRESETS, SETTINGS_KEYS, snapshot, detectMode, readMode, readOffResumeState, resolveMode } = ArrowConfig;
+const { MODE_KEYS, MODE_PRESETS, SETTINGS_KEYS, SIDEBAR_SETTING_KEY, SIDEBAR_CHILD_KEYS, snapshot, detectMode, readMode, readOffResumeState, resolveMode } = ArrowConfig;
 const SUBSCRIPTIONS_URL = 'https://www.youtube.com/feed/subscriptions';
 const YOUTUBE_HOME_URL = 'https://www.youtube.com/';
 const SHORTS_URL = /^https:\/\/www\.youtube\.com\/(?:[^/?#]+\/)*shorts(?:[/?#]|$)/;
@@ -47,6 +47,22 @@ function enqueueCommit(work) {
 
 function isSettingsPatch(patch) {
   return SETTINGS_KEYS.some((key) => Object.prototype.hasOwnProperty.call(patch, key));
+}
+
+function synchronizeSidebarPatch(current, patch) {
+  const hasMaster = Object.prototype.hasOwnProperty.call(patch, SIDEBAR_SETTING_KEY);
+  const changedChildren = SIDEBAR_CHILD_KEYS.filter((key) => Object.prototype.hasOwnProperty.call(patch, key));
+  if (!hasMaster && !changedChildren.length) return patch;
+
+  const synchronized = { ...patch };
+  if (hasMaster && !changedChildren.length) {
+    for (const key of SIDEBAR_CHILD_KEYS) synchronized[key] = !!patch[SIDEBAR_SETTING_KEY];
+    return synchronized;
+  }
+
+  const next = { ...current, ...synchronized };
+  synchronized[SIDEBAR_SETTING_KEY] = SIDEBAR_CHILD_KEYS.every((key) => !!next[key]);
+  return synchronized;
 }
 
 function syncStorageCall(method, ...args) {
@@ -129,6 +145,7 @@ async function applyRemoteSyncPreferences(envelope) {
 }
 
 function prepareStatePatch(current, patch) {
+  patch = synchronizeSidebarPatch(current, patch);
   const hasExplicitMode = Object.prototype.hasOwnProperty.call(patch, MODE_KEYS.mode);
   const resume = readOffResumeState(current);
   const restorePreviousMode = patch.ArrowOn === true && current.ArrowOn === false && !hasExplicitMode && resume;
@@ -295,6 +312,9 @@ async function initializeSettings() {
     const defaults = MODE_PRESETS[savedMode] || MODE_PRESETS.minimal;
     for (const [key, value] of Object.entries(defaults)) {
       if (typeof existing[key] === 'undefined') patch[key] = value;
+    }
+    for (const key of SIDEBAR_CHILD_KEYS) {
+      if (typeof existing[key] === 'undefined') patch[key] = !!existing[SIDEBAR_SETTING_KEY];
     }
     if (!ArrowConfig.VALID_MODES.has(existing[MODE_KEYS.mode])) {
       patch[MODE_KEYS.mode] = detectMode(snapshot({ ...existing, ...patch }, true));

@@ -113,6 +113,10 @@ test("persisted mode remains authoritative and validates its settings", () => {
     hide_shorts: true,
     minimal_homepage: true,
     hide_sidebar_recommendations: true,
+    hide_sidebar_recommended: true,
+    hide_sidebar_live_chat: true,
+    hide_sidebar_playlist: true,
+    hide_sidebar_fundraiser: true,
     hide_comments: false
   };
 
@@ -136,6 +140,10 @@ test("an off cycle restores the canonical mode and settings that preceded it", (
     hide_shorts: true,
     minimal_homepage: true,
     hide_sidebar_recommendations: true,
+    hide_sidebar_recommended: true,
+    hide_sidebar_live_chat: true,
+    hide_sidebar_playlist: true,
+    hide_sidebar_fundraiser: true,
     hide_comments: false
   };
 
@@ -154,4 +162,33 @@ test("comment visibility defaults are mode-specific", () => {
   assert.equal(MODE_PRESETS.minimal.hide_comments, false);
   assert.equal(MODE_PRESETS["high-focus"].hide_comments, true);
   assert.equal(MODE_PRESETS.off.hide_comments, false);
+});
+
+test("sidebar controls are visible while content projects only granular attributes", () => {
+  const html = read("popup.html");
+  const content = read("js/content.js");
+  const context = { globalThis: {} };
+  vm.runInNewContext(read("js/core/config.js"), context);
+  const { MODE_PRESETS, SIDEBAR_CHILD_KEYS } = context.globalThis.ArrowConfig;
+
+  assert.match(html, /<label for="hide-sidebar-recommendations">Hide sidebar<\/label>/);
+  for (const key of SIDEBAR_CHILD_KEYS) {
+    assert.match(html, new RegExp(`id="${key.replaceAll('_', '-')}"`));
+    assert.equal(MODE_PRESETS.minimal[key], true);
+    assert.equal(MODE_PRESETS["high-focus"][key], true);
+    assert.equal(MODE_PRESETS.off[key], false);
+  }
+  assert.match(content, /"hide_sidebar_recommended", "hide_sidebar_live_chat"/);
+  assert.match(content, /document\.documentElement\.removeAttribute\("hide_sidebar_recommendations"\)/);
+});
+
+test("content script exposes live chat availability as a root attribute", () => {
+  const content = read("js/content.js");
+
+  assert.match(content, /function updateChatExists\(\)/);
+  assert.match(content, /document\.querySelector\("ytd-live-chat-frame"\)/);
+  assert.match(content, /!chatFrame\.hasAttribute\("hide-chat-frame"\)/);
+  assert.match(content, /!chatFrame\.hasAttribute\("collapsed"\)/);
+  assert.match(content, /setAttribute\("chat_exists", String\(chatExists\)\)/);
+  assert.match(content, /attributeFilter: \["hide-chat-frame", "collapsed"\]/);
 });

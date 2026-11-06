@@ -5,9 +5,16 @@ const SETTINGS = {
   "disable-shorts": "hide_shorts",
   "minimal-homepage": "minimal_homepage",
   "hide-sidebar-recommendations": "hide_sidebar_recommendations",
+  "hide-sidebar-recommended": "hide_sidebar_recommended",
+  "hide-sidebar-live-chat": "hide_sidebar_live_chat",
+  "hide-sidebar-playlist": "hide_sidebar_playlist",
+  "hide-sidebar-fundraiser": "hide_sidebar_fundraiser",
   "hide-comments": "hide_comments"
 };
-const { MODE_KEYS, MODE_PRESETS, readMode, createModeMetadata } = ArrowConfig;
+const { MODE_KEYS, MODE_PRESETS, SIDEBAR_CHILD_KEYS, readMode, createModeMetadata } = ArrowConfig;
+const SIDEBAR_MASTER_ID = "hide-sidebar-recommendations";
+const SIDEBAR_CHILD_IDS = SIDEBAR_CHILD_KEYS.map((key) => Object.entries(SETTINGS)
+  .find(([, setting]) => setting === key)?.[0]);
 let initialValues = {};
 let initialMode = "minimal";
 let activeTab = "home";
@@ -226,6 +233,18 @@ function currentSettings() {
   };
 }
 
+function setSidebarChildren(value) {
+  SIDEBAR_CHILD_IDS.forEach((id) => {
+    const control = document.getElementById(id);
+    if (control) control.checked = value;
+  });
+}
+
+function updateSidebarMaster() {
+  const master = document.getElementById(SIDEBAR_MASTER_ID);
+  if (master) master.checked = SIDEBAR_CHILD_IDS.every((id) => document.getElementById(id)?.checked);
+}
+
 function markActiveMode(mode) {
   document.querySelectorAll(".mode-option").forEach((option) => option.classList.toggle(
     "mode-active", option.querySelector(`input[value="${mode}"]`) !== null
@@ -403,7 +422,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     markActiveMode(mode);
     stageChange();
   }));
-  Object.keys(SETTINGS).forEach((id) => document.getElementById(id)?.addEventListener("change", () => {
+  document.getElementById(SIDEBAR_MASTER_ID)?.addEventListener("change", (event) => {
+    setSidebarChildren(event.target.checked);
+    document.getElementById("custom-mode-radio").checked = true;
+    document.getElementById("edit-custom-btn").hidden = false;
+    markActiveMode("custom");
+    stageChange();
+  });
+  SIDEBAR_CHILD_IDS.forEach((id) => document.getElementById(id)?.addEventListener("change", () => {
+    updateSidebarMaster();
+    document.getElementById("custom-mode-radio").checked = true;
+    document.getElementById("edit-custom-btn").hidden = false;
+    markActiveMode("custom");
+    stageChange();
+  }));
+  Object.keys(SETTINGS).filter((id) => id !== SIDEBAR_MASTER_ID && !SIDEBAR_CHILD_IDS.includes(id)).forEach((id) => document.getElementById(id)?.addEventListener("change", () => {
     document.getElementById("custom-mode-radio").checked = true;
     document.getElementById("edit-custom-btn").hidden = false;
     markActiveMode("custom");

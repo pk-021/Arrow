@@ -14,6 +14,11 @@ const offSettings = {
 }
 
 let settingCache = {};
+const rootAttributeKeys = new Set([
+    "ArrowOn", "redirect_home", "hide_shorts", "minimal_homepage",
+    "hide_sidebar_recommended", "hide_sidebar_live_chat",
+    "hide_sidebar_playlist", "hide_sidebar_fundraiser", "hide_comments"
+]);
 
 function safeRuntimeSendMessage(payload) {
     try {
@@ -155,17 +160,39 @@ function configureLogo() {
 
 // Apply HTML attributes to the webpage
 function applyAttributes(settings) {
+    document.documentElement.removeAttribute("hide_sidebar_recommendations");
     Object.keys(settings).forEach(key => {
-        if (
-            key.includes("hide") ||
-            key === "ArrowOn" ||
-            key === "minimal_homepage" ||
-            key === "redirect_home"
-        ) {
+        if (rootAttributeKeys.has(key)) {
             document.documentElement.setAttribute(key, settings[key]);
         }
     });
 }
+
+function updateChatExists() {
+    const chatFrame = document.querySelector("ytd-live-chat-frame");
+    const chatExists = !!chatFrame &&
+        !chatFrame.hasAttribute("hide-chat-frame") &&
+        !chatFrame.hasAttribute("collapsed");
+    document.documentElement.setAttribute("chat_exists", String(chatExists));
+}
+
+let chatExistsUpdateQueued = false;
+function scheduleChatExistsUpdate() {
+    if (chatExistsUpdateQueued) return;
+    chatExistsUpdateQueued = true;
+    requestAnimationFrame(() => {
+        chatExistsUpdateQueued = false;
+        updateChatExists();
+    });
+}
+
+new MutationObserver(scheduleChatExistsUpdate).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["hide-chat-frame", "collapsed"]
+});
+scheduleChatExistsUpdate();
 
 //Mutation observer to observe changes to the attributes
 new MutationObserver((mutations) => {

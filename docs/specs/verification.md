@@ -71,6 +71,23 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     watch page without a playlist, confirm `#secondary.ytd-watch-flexy` is
     hidden. Disable the setting on both pages and confirm the sidebar returns.
 
+25a. Open Custom Settings and confirm **Hide Sidebar** visibly contains the
+    indented controls Hide recommended, Hide live chat, Hide playlist, and Hide
+    fundraiser. Turn Hide Sidebar on and off and confirm all four child controls
+    follow. Turn a child off and confirm Hide Sidebar turns off without changing
+    the other children; turn the final disabled child on and confirm Hide
+    Sidebar turns on. Save, reopen the popup, and confirm all five values
+    persist. Load an existing profile that has only
+    `hide_sidebar_recommendations` and confirm its missing child values inherit
+    that master value. Confirm the document root exposes only the four granular
+    sidebar attributes and this case adds no new content stylesheet rules.
+
+25b. On a desktop YouTube live watch page, confirm the document root has
+    `chat_exists="true"` while `ytd-live-chat-frame` has neither
+    `hide-chat-frame` nor `collapsed`. Add either attribute and confirm
+    `chat_exists="false"`; remove it and confirm the value returns to `"true"`.
+    Confirm a page without a live-chat frame reports `chat_exists="false"`.
+
 26. Inspect popup Home, Settings, Mode, Custom, confirmation, and password views,
     plus the legacy settings page, in light and dark themes. At the preferred
     popup size (420 by 600 CSS pixels) and constrained width/height, confirm a
