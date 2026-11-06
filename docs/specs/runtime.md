@@ -60,7 +60,10 @@ surface using `ytd-comments#comments`. The rule is scoped to that setting and
 does not hide comment controls when the setting is off.
 
 When `hide_sidebar_recommendations="true"` on desktop YouTube watch pages,
-the stylesheet uses the `is_playlist` page flag. On playlist watches, it hides
+the stylesheet uses the `is_playlist` page flag. The content script sets that
+flag to `"true"` only when `ytd-playlist-panel-renderer#playlist` exists and
+does not have its `hidden` attribute; it sets the flag to `"false"` when the
+element is absent or hidden. On playlist watches, it hides
 direct children of `#secondary-inner` except
 `ytd-playlist-panel-renderer#playlist`. On non-playlist watches, it hides
 `#secondary.ytd-watch-flexy`. Neither rule applies when the setting is false.

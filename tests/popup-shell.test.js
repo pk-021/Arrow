@@ -192,3 +192,11 @@ test("content script exposes live chat availability as a root attribute", () => 
   assert.match(content, /setAttribute\("chat_exists", String\(chatExists\)\)/);
   assert.match(content, /attributeFilter: \["hide-chat-frame", "collapsed"\]/);
 });
+
+test("content script derives playlist state from the visible playlist panel", () => {
+  const content = read("js/content.js");
+
+  assert.match(content, /document\.querySelector\("ytd-playlist-panel-renderer#playlist"\)/);
+  assert.match(content, /!!playlistPanel && !playlistPanel\.hasAttribute\("hidden"\)/);
+  assert.match(content, /\/\*[\s\S]*?\[\?&\]list=[\s\S]*?\*\//);
+});

@@ -70,6 +70,9 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     usable while other direct children of `#secondary-inner` are hidden. On a
     watch page without a playlist, confirm `#secondary.ytd-watch-flexy` is
     hidden. Disable the setting on both pages and confirm the sidebar returns.
+    Confirm `is_playlist="true"` only while
+    `ytd-playlist-panel-renderer#playlist` exists without `hidden`, and confirm
+    `is_playlist="false"` when that element is absent or has `hidden`.
 
 25a. Open Custom Settings and confirm **Hide Sidebar** visibly contains the
     indented controls Hide recommended, Hide live chat, Hide playlist, and Hide

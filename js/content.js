@@ -113,9 +113,13 @@ function update_home_props() {
 }
 
 function update_playlist_props() {
+    /*
     const url = window.location.href;
     // Check if URL contains playlist parameter or is a playlist page
     const isPlaylist = /[?&]list=/.test(url) || /\/playlist\?/.test(url);
+    */
+    const playlistPanel = document.querySelector("ytd-playlist-panel-renderer#playlist");
+    const isPlaylist = !!playlistPanel && !playlistPanel.hasAttribute("hidden");
     document.documentElement.setAttribute("is_playlist", isPlaylist);
 }
 
