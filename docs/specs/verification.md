@@ -42,6 +42,8 @@
     with the selected radio button in Mode. They must show the same persisted
     mode, including the distinct Minimal and High Focus choices despite their
     equivalent setting booleans. Repeat after a protected custom-mode save.
+    In High Focus, confirm every feature toggle is enabled, including Redirect
+    to Subscriptions, all four Hide sidebar children, and Hide comments.
 17. On a YouTube watch page, select High Focus and confirm
     `ytd-comments#comments` is hidden. Select Minimal and confirm comments are
     visible. In Custom, toggle Hide comments and confirm the page updates after
@@ -70,9 +72,9 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     usable while other direct children of `#secondary-inner` are hidden. On a
     watch page without a playlist, confirm `#secondary.ytd-watch-flexy` is
     hidden. Disable the setting on both pages and confirm the sidebar returns.
-    Confirm `is_playlist="true"` only while
+    Confirm `has_playlist="true"` only while
     `ytd-playlist-panel-renderer#playlist` exists without `hidden`, and confirm
-    `is_playlist="false"` when that element is absent or has `hidden`.
+    `has_playlist="false"` when that element is absent or has `hidden`.
 
 25a. Open Custom Settings and confirm **Hide Sidebar** visibly contains the
     indented controls Hide recommended, Hide live chat, Hide playlist, and Hide
@@ -82,8 +84,10 @@ Session mutations use dedicated `arrow:session-start` and `arrow:session-skip` w
     Sidebar turns on. Save, reopen the popup, and confirm all five values
     persist. Load an existing profile that has only
     `hide_sidebar_recommendations` and confirm its missing child values inherit
-    that master value. Confirm the document root exposes only the four granular
-    sidebar attributes and this case adds no new content stylesheet rules.
+    that master value. Confirm the document root exposes
+    `hide_sidebar_recommendations` for the sidebar and that only
+    `minimal_homepage` controls the established home-feed and chip hiding
+    behavior.
 
 25b. On a desktop YouTube live watch page, confirm the document root has
     `chat_exists="true"` while `ytd-live-chat-frame` has neither

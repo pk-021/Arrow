@@ -15,7 +15,7 @@ blocking is not active and no block-list mutation messages are supported.
 Reads settings at load and whenever local storage changes or the document
 resumes. When the extension
 is off, it applies the off feature set. It writes relevant setting values and
-page-state flags (`is_home`, `is_playlist`) to the document root for CSS. It
+page-state flags (`is_home`, `has_playlist`) to the document root for CSS. It
 updates the logo behavior and page flags across YouTube SPA navigation events.
 It writes `chat_exists` on the document root: it is `"true"` only when a
 `ytd-live-chat-frame` exists without either `hide-chat-frame` or `collapsed`.
@@ -60,7 +60,7 @@ surface using `ytd-comments#comments`. The rule is scoped to that setting and
 does not hide comment controls when the setting is off.
 
 When `hide_sidebar_recommendations="true"` on desktop YouTube watch pages,
-the stylesheet uses the `is_playlist` page flag. The content script sets that
+the stylesheet uses the `has_playlist` page flag. The content script sets that
 flag to `"true"` only when `ytd-playlist-panel-renderer#playlist` exists and
 does not have its `hidden` attribute; it sets the flag to `"false"` when the
 element is absent or hidden. On playlist watches, it hides
@@ -69,8 +69,10 @@ direct children of `#secondary-inner` except
 `#secondary.ytd-watch-flexy`. Neither rule applies when the setting is false.
 Keep the newer `#secondary-inner div#related` rule commented out for reference.
 
-The four granular sidebar preference values, rather than the master setting,
-are written as document-root attributes. No selectors consume them until a
-later, explicitly specified CSS change.
+`minimal_homepage` alone controls the established home-feed and chip hiding
+behavior. The document root receives `hide_sidebar_recommendations` for the
+independent watch-sidebar selectors. The granular sidebar preference values
+remain persisted but have no selectors until a later, explicitly specified CSS
+change.
 
 

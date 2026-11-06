@@ -16,9 +16,12 @@ const offSettings = {
 let settingCache = {};
 const rootAttributeKeys = new Set([
     "ArrowOn", "redirect_home", "hide_shorts", "minimal_homepage",
-    "hide_sidebar_recommended", "hide_sidebar_live_chat",
-    "hide_sidebar_playlist", "hide_sidebar_fundraiser", "hide_comments"
+    "hide_sidebar_recommendations", "hide_comments"
 ]);
+const sidebarChildAttributeKeys = [
+    "hide_sidebar_recommended", "hide_sidebar_live_chat",
+    "hide_sidebar_playlist", "hide_sidebar_fundraiser"
+];
 
 function safeRuntimeSendMessage(payload) {
     try {
@@ -119,8 +122,8 @@ function update_playlist_props() {
     const isPlaylist = /[?&]list=/.test(url) || /\/playlist\?/.test(url);
     */
     const playlistPanel = document.querySelector("ytd-playlist-panel-renderer#playlist");
-    const isPlaylist = !!playlistPanel && !playlistPanel.hasAttribute("hidden");
-    document.documentElement.setAttribute("is_playlist", isPlaylist);
+    const hasPlaylist = !!playlistPanel && !playlistPanel.hasAttribute("hidden");
+    document.documentElement.setAttribute("has_playlist", hasPlaylist);
 }
 
 // =======================
@@ -164,7 +167,7 @@ function configureLogo() {
 
 // Apply HTML attributes to the webpage
 function applyAttributes(settings) {
-    document.documentElement.removeAttribute("hide_sidebar_recommendations");
+    sidebarChildAttributeKeys.forEach(key => document.documentElement.removeAttribute(key));
     Object.keys(settings).forEach(key => {
         if (rootAttributeKeys.has(key)) {
             document.documentElement.setAttribute(key, settings[key]);

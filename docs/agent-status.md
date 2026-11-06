@@ -1,9 +1,9 @@
 ﻿# Agent status
 
-**Status:** Playlist page-state detection refinement complete; live Chrome validation pending.
+**Status:** High Focus preset expansion complete; live Chrome validation pending.
 
-**Doing:** The content script derives playlist state from the visible playlist panel.
+**Doing:** High Focus enables every available feature setting.
 
-**Next:** Validate playlist and chat state in a dedicated Chrome test profile when one is connected.
+**Next:** Validate High Focus, homepage, sidebar, playlist, and chat states in a dedicated Chrome test profile when one is connected.
 
-**Outcome:** `node --test tests/popup-shell.test.js tests/identity-sync.test.js` passed all 21 tests; JavaScript syntax checks and `git diff --check` passed. No live browser is currently connected for popup or YouTube validation.
+**Outcome:** `node --test tests/popup-shell.test.js tests/identity-sync.test.js` passed all 22 tests; JavaScript syntax checks and `git diff --check` passed. No live browser is currently connected for popup or YouTube validation.

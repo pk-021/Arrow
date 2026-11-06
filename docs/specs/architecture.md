@@ -34,8 +34,9 @@
 
 ## Mode behavior
 
-`off` disables every feature. `minimal` and `high-focus` use distinct feature
-settings; High Focus additionally hides watch-page comments. They remain
+`off` disables every feature. `minimal` enables its reduced default; `high-focus`
+enables every feature setting, including subscription redirect and watch-page
+comments. They remain
 separate persisted modes because the UI
 offers both choices. Every surface reads the persisted `arrow_mode` when it is
 valid, so equivalent presets retain their chosen identity. Only missing or

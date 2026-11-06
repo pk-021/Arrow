@@ -120,7 +120,7 @@ test("persisted mode remains authoritative and validates its settings", () => {
     hide_comments: false
   };
 
-  const highFocusSettings = { ...minimalSettings, hide_comments: true };
+  const highFocusSettings = { ...minimalSettings, redirect_home: true, hide_comments: true };
   assert.equal(readMode({ ...highFocusSettings, arrow_mode: "high-focus" }), "high-focus");
   assert.equal(readMode({ ...minimalSettings, arrow_mode: "not-a-mode" }), "minimal");
   assert.equal(resolveMode(
@@ -164,7 +164,17 @@ test("comment visibility defaults are mode-specific", () => {
   assert.equal(MODE_PRESETS.off.hide_comments, false);
 });
 
-test("sidebar controls are visible while content projects only granular attributes", () => {
+test("high focus enables every feature setting", () => {
+  const context = { globalThis: {} };
+  vm.runInNewContext(read("js/core/config.js"), context);
+  const { MODE_PRESETS, SETTINGS_KEYS } = context.globalThis.ArrowConfig;
+
+  for (const key of SETTINGS_KEYS) {
+    assert.equal(MODE_PRESETS["high-focus"][key], true, `${key} must be enabled in High Focus`);
+  }
+});
+
+test("sidebar controls are visible while content projects the master attribute", () => {
   const html = read("popup.html");
   const content = read("js/content.js");
   const context = { globalThis: {} };
@@ -178,8 +188,8 @@ test("sidebar controls are visible while content projects only granular attribut
     assert.equal(MODE_PRESETS["high-focus"][key], true);
     assert.equal(MODE_PRESETS.off[key], false);
   }
-  assert.match(content, /"hide_sidebar_recommended", "hide_sidebar_live_chat"/);
-  assert.match(content, /document\.documentElement\.removeAttribute\("hide_sidebar_recommendations"\)/);
+  assert.match(content, /"hide_sidebar_recommendations", "hide_comments"/);
+  assert.match(content, /sidebarChildAttributeKeys\.forEach\(key => document\.documentElement\.removeAttribute\(key\)\)/);
 });
 
 test("content script exposes live chat availability as a root attribute", () => {
@@ -198,5 +208,7 @@ test("content script derives playlist state from the visible playlist panel", ()
 
   assert.match(content, /document\.querySelector\("ytd-playlist-panel-renderer#playlist"\)/);
   assert.match(content, /!!playlistPanel && !playlistPanel\.hasAttribute\("hidden"\)/);
+  assert.match(content, /setAttribute\("has_playlist", hasPlaylist\)/);
+  assert.doesNotMatch(content, /setAttribute\("is_playlist"/);
   assert.match(content, /\/\*[\s\S]*?\[\?&\]list=[\s\S]*?\*\//);
 });

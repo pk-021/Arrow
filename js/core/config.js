@@ -32,8 +32,8 @@ globalThis.ArrowConfig = (() => {
     resume: 'arrow_mode_before_off'
   });
 
-  // Keep the current product behaviour: Minimal and High Focus have the same
-  // settings, but remain distinct choices in the UI and persisted metadata.
+  // Mode metadata preserves the user's named choice even when a later feature
+  // change would otherwise make the raw setting values appear equivalent.
   const MODE_PRESETS = Object.freeze({
     off: Object.freeze({
       ArrowOn: false, redirect_home: false, hide_shorts: false,
@@ -50,7 +50,7 @@ globalThis.ArrowConfig = (() => {
       hide_comments: false
     }),
     'high-focus': Object.freeze({
-      ArrowOn: true, redirect_home: false, hide_shorts: true,
+      ArrowOn: true, redirect_home: true, hide_shorts: true,
       minimal_homepage: true, hide_sidebar_recommendations: true,
       hide_sidebar_recommended: true, hide_sidebar_live_chat: true,
       hide_sidebar_playlist: true, hide_sidebar_fundraiser: true,
